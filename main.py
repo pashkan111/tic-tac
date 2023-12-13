@@ -14,30 +14,32 @@ from checkers import check_win
 Board: TypeAlias = list[list[Any]]
 
 
-
 PLAYERS = {1: "X", 2: "O"}
 
 
 def create_board(rows: int) -> Board:
-    board = [[j for j in range(((i-1)*rows)+1, (i*rows)+1)] for i in range(1, rows+1)]
+    board = [
+        [j for j in range(((i - 1) * rows) + 1, (i * rows) + 1)]
+        for i in range(1, rows + 1)
+    ]
     return board
 
 
 def show_board(board: Board) -> str:
-    result = ''
+    result = ""
     for row in board:
         string_row = list(map(str, row))
-        row_result = '|'
+        row_result = "|"
         for elem in string_row:
             if len(elem) == 1:
-                row_result += f' {elem} |'
+                row_result += f" {elem} |"
                 continue
             elif len(elem) == 2:
-                row_result += f'{elem} |'
+                row_result += f"{elem} |"
             elif len(elem) == 3:
-                row_result += f'{elem}|'
+                row_result += f"{elem}|"
 
-        result += row_result + '\n'
+        result += row_result + "\n"
     return result
 
 
@@ -56,6 +58,7 @@ def _player_changer() -> Callable[[], int]:
 
     def switch_player() -> int:
         return next(iterator)
+
     return switch_player
 
 
@@ -64,7 +67,9 @@ def main():
 
     while True:
         try:
-            rows_count = int(input(f"Введите размер поля. Максимально значение: {MAX_ROWS}: "))
+            rows_count = int(
+                input(f"Введите размер поля. Максимально значение: {MAX_ROWS}: ")
+            )
             break
         except ValueError:
             print("Введите число!")
@@ -76,7 +81,7 @@ def main():
         print(show_board(board))
 
         current_player = get_player()
-        
+
         print(f"Игрок {current_player}, Ваш ход: ")
 
         while True:
@@ -88,14 +93,14 @@ def main():
                 except Exception as e:
                     print(e)
                     continue
-                
+
             except ValueError:
                 print("Введите число!")
                 continue
-    
+
         is_win = check_win(board)
         if is_win:
-            print(f'{current_player} Победил!')
+            print(f"{current_player} Победил!")
             break
         continue
 

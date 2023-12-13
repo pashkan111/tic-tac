@@ -135,7 +135,7 @@ Logic:
                 col: int
             }
             RESPONSE: {
-                status: [wictory, end, ok]
+                status: [victory, end, ok]
                 winner: int | None
             }
 

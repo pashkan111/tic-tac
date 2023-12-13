@@ -7,9 +7,9 @@ from .exceptions import ChipDoesNotExistsException
 
 
 class MoveStatus(StrEnum):
-    VICTORY = 'VICTORY'
-    END = 'END'
-    NEXT_MOVE = 'NEXT_MOVE'
+    VICTORY = "VICTORY"
+    END = "END"
+    NEXT_MOVE = "NEXT_MOVE"
 
 
 @dataclass(frozen=True, slots=True)
@@ -23,17 +23,17 @@ class Chips(Enum):
     O = 2
 
     @classmethod
-    def get_chip_by_id(cls, id: int) -> 'Chips':
+    def get_chip_by_id(cls, id: int) -> "Chips":
         for chip in cls:
             if chip.value == id:
                 return chip
         raise ChipDoesNotExistsException(id=id)
-            
+
 
 @dataclass
 class CheckResult:
     is_winner: bool
-    chip: Chips | None
+    chip: Chips | None = None
 
 
 class CheckerAbstract(abc.ABC):
@@ -42,16 +42,22 @@ class CheckerAbstract(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def _check_diagonal(self, board: 'BoardAbstract') -> bool:
+    def _check_diagonal(self, board: "BoardAbstract") -> bool:
         ...
-    
+
     @abc.abstractmethod
-    def _check_gorizontal(self, board: 'BoardAbstract') -> bool:
+    def _check_gorizontal(self, board: "BoardAbstract") -> bool:
         ...
-    
+
     @abc.abstractmethod
-    def _check_vertical(self, board: 'BoardAbstract') -> bool:
+    def _check_vertical(self, board: "BoardAbstract") -> bool:
         ...
+
+
+
+class PlayerAbstract(abc.ABC):
+    id: int
+    chip: Chips | None
 
 
 class BoardAbstract(abc.ABC):
@@ -62,13 +68,8 @@ class BoardAbstract(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def make_move(self, player_id: int, row: int, col: int) -> None:
+    def make_move(self, *, player: PlayerAbstract, row: int, col: int) -> None:
         pass
-
-
-class PlayerAbstract(abc.ABC):
-    id: int
-    chip: Chips
 
 
 class RepositoryAbstract(abc.ABC):
@@ -81,12 +82,22 @@ class RepositoryAbstract(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def check_players(self, rows_count: int) -> PlayerAbstract | None:
+    async def set_current_move(self, next_move: PlayerAbstract):
+        ...
+
+    @abc.abstractmethod
+    async def check_players_in_wait_list(
+        self, rows_count: int
+    ) -> PlayerAbstract | None:
+        ...
+
+    @abc.abstractmethod
+    async def set_players_to_wait_list(self, rows_count: int) -> PlayerAbstract | None:
         ...
 
 
 class GameAbstract(abc.ABC):
-    __slots__ = ('room_id', 'players', 'repo', 'board', 'checker', 'next_move')
+    __slots__ = ("room_id", "players", "repo", "board", "checker", "next_move")
     room_id: uuid.UUID
     players: list[PlayerAbstract]
     repo: RepositoryAbstract
@@ -99,5 +110,5 @@ class GameAbstract(abc.ABC):
         ...
 
     @abc.abstractmethod
-    async def make_move(self, row: int, col: int, player_id: int) -> MoveEvent:
+    async def make_move(self, *, row: int, col: int) -> MoveEvent:
         ...
