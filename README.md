@@ -84,7 +84,7 @@ Repositories:
 
 Logic:
 
-    User init a game and we check Redis searching_partners. If list is not empty, we randonly get user_id and create a game in Redis current_games.
+    User init a game and we check Redis searching_partners. If list is not empty, we randomly get user_id and create a game in Redis current_games.
 
     Each user has ID so it is needed to make an auth logic
 

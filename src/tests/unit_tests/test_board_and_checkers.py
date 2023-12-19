@@ -1,6 +1,6 @@
 from src.logic.checker import CheckerArray
 from src.logic.interfaces import CheckResult, Chips
-from src.logic.board import BoardArray
+from src.logic.board import BoardArray, Board
 from src.logic.player import Player
 from settings import MAX_ROWS, MIN_ROWS
 import pytest
@@ -8,7 +8,7 @@ from src.logic.exceptions import RowsNumberException
 
 
 def test_board_created():
-    new_board = BoardArray(10)
+    new_board = BoardArray(rows_count=10)
     assert len(new_board.board) == 10
     assert len(new_board.board[0]) == 10
     assert len(new_board.board[4]) == 10
@@ -17,14 +17,14 @@ def test_board_created():
 
 def test_board_created__with_rows_exceed():
     with pytest.raises(RowsNumberException):
-        BoardArray(MAX_ROWS + 1)
+        BoardArray(rows_count=MAX_ROWS + 1)
 
     with pytest.raises(RowsNumberException):
-        BoardArray(MIN_ROWS - 1)
+        BoardArray(rows_count=MIN_ROWS - 1)
 
 
 def test_check_win_gorizontal():
-    board = BoardArray(5)
+    board = BoardArray(rows_count=5)
     checker = CheckerArray()
 
     board.board[3] = [1, 1, 1, 1, 1]
@@ -34,7 +34,7 @@ def test_check_win_gorizontal():
 
 
 def test_check_win_gorizontal__no_win():
-    board = BoardArray(5)
+    board = BoardArray(rows_count=5)
     checker = CheckerArray()
 
     board.board[3] = [1, 1, 1, 1, 2]
@@ -44,7 +44,7 @@ def test_check_win_gorizontal__no_win():
 
 
 def test_check_win_vertical():
-    board = BoardArray(5)
+    board = BoardArray(rows_count=5)
     checker = CheckerArray()
 
     for arr in board.board:
@@ -55,7 +55,7 @@ def test_check_win_vertical():
 
 
 def test_check_win_vertical__no_win():
-    board = BoardArray(5)
+    board = BoardArray(rows_count=5)
     checker = CheckerArray()
 
     for num, arr in enumerate(board.board):
@@ -69,7 +69,7 @@ def test_check_win_vertical__no_win():
 
 
 def test_check_win_diagonal():
-    board = BoardArray(5)
+    board = BoardArray(rows_count=5)
     checker = CheckerArray()
 
     for num, arr in enumerate(board.board):
@@ -80,7 +80,7 @@ def test_check_win_diagonal():
 
 
 def test_check_win_diagonal__no_win():
-    board = BoardArray(5)
+    board = BoardArray(rows_count=5)
     checker = CheckerArray()
 
     for num, arr in enumerate(board.board):
@@ -94,7 +94,7 @@ def test_check_win_diagonal__no_win():
 
 
 def test_check_win__no_move():
-    board = BoardArray(5)
+    board = BoardArray(rows_count=5)
     checker = CheckerArray()
 
     res = checker.check_win(board=board)
@@ -102,9 +102,19 @@ def test_check_win__no_move():
 
 
 def test_board_make_move__move_made():
-    board = BoardArray(5)
+    board = BoardArray(rows_count=5)
     player = Player(id=10, chip=Chips.O)
 
     board.make_move(player=player, row=3, col=3)
 
     assert board.board[2][2] == 2
+
+
+def test_create_board__with_board():
+    current_board = [
+        [1, 2, 0],
+        [0, 0, 0],
+        [1, 1, 0],
+    ]
+    board = BoardArray(board=current_board)
+    assert board.board == current_board

@@ -8,11 +8,10 @@ from .board import BoardArray
 from .player import Player
 from .checker import CheckerArray
 from .repository import Repository
-from typing import Callable, Iterable
 from .exceptions import PlayersNotEnoughException, GameNotStartedException
 import uuid
 import itertools
-
+from .schemas import GameRedisSchema
 
 # в редисе есть игрок текущий ход
 # нужна функция в которую я передам этого игрока, создастся итератор и я могу 
@@ -25,7 +24,7 @@ class Game(GameAbstract):
     repo: Repository
     board: BoardArray
     checker: CheckerArray
-    current_move_player: Player | None
+    current_move_player: Player
     _player_iterator: Iterator[Player]
     _started: bool = False
 
@@ -85,10 +84,15 @@ class Game(GameAbstract):
             col=col
         )
         check_result = self.checker.check_win(self.board)
-        await self._save_state()
         self._switch_player()
+        await self._save_state()
         return check_result
 
     async def _save_state(self) -> None:
-        await self.repo.set_board(self.board)
-        await self.repo.set_current_move(self.current_move_player)
+        game_data = GameRedisSchema(
+            room_id=self.room_id,
+            players=self.players,
+            current_move_player=self.current_move_player,
+            board=self.board.board
+        )
+        await self.repo.set_game(game_data)

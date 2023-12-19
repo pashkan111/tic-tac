@@ -4,10 +4,13 @@ from src.logic.repository import Repository
 from src.logic.player import Player
 from src.logic.interfaces import Chips
 from src.logic.game import Game
+from src.logic.schemas import GameRedisSchema
 from src.logic.exceptions import PlayersNotEnoughException, GameNotStartedException
 import pytest
 import uuid
 from unittest.mock import patch
+import asyncio
+from unittest.mock import AsyncMock
 
 
 @pytest.fixture()
@@ -22,7 +25,7 @@ def player2_fixture() -> Player:
 
 @pytest.fixture()
 def board_fixture() -> BoardArray:
-    return BoardArray(5)
+    return BoardArray(rows_count=5)
 
 
 @pytest.fixture()
@@ -123,7 +126,6 @@ async def test_game_make_move__next_move_player_changes(player1_fixture, player2
         checker=checker_fixture
     )
 
-
     with patch.object(game, '_save_state', return_value=None) as _:
         await game.start()
 
@@ -141,3 +143,54 @@ async def test_game_make_move__next_move_player_changes(player1_fixture, player2
     assert board[1][1] == 2
 
     assert game.current_move_player == player2_fixture
+
+
+@pytest.mark.asyncio
+async def test_game__set_state(player1_fixture, player2_fixture, board_fixture, repo_fixture, checker_fixture, mocker):
+    repo_mocked = mocker.patch('src.logic.repository.repo')
+    repo_mocked.configure_mock(
+       **{'set_game': AsyncMock(asyncio.Future())}
+    )
+    
+    game = Game(
+        repo=repo_mocked,
+        board=board_fixture,
+        players=[player1_fixture, player2_fixture],
+        checker=checker_fixture
+    )
+
+    await game.start()
+
+    repo_mocked.set_game.assert_called_once_with(
+        GameRedisSchema(
+            room_id=game.room_id,
+            players=[player1_fixture, player2_fixture],
+            current_move_player=game.current_move_player,
+            board=game.board.board
+        )
+    )
+
+
+@pytest.mark.asyncio
+async def test_game__set_state__check_call_count(player1_fixture, player2_fixture, board_fixture, repo_fixture, checker_fixture, mocker):
+    repo_mocked = mocker.patch('src.logic.repository.repo')
+    repo_mocked.configure_mock(
+       **{'set_game': AsyncMock(asyncio.Future())}
+    )
+    
+    game = Game(
+        repo=repo_mocked,
+        board=board_fixture,
+        players=[player1_fixture, player2_fixture],
+        checker=checker_fixture
+    )
+
+    await game.start()
+
+    await game.make_move(row=1, col=1)
+    await game.make_move(row=2, col=1)
+    await game.make_move(row=1, col=2)
+    await game.make_move(row=2, col=2)
+    await game.make_move(row=3, col=3)
+
+    assert repo_mocked.set_game.call_count == 6

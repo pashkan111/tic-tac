@@ -10,6 +10,7 @@ packages = [{include = "tic_tac"}]
 python = "^3.11"
 python-tools = {git = "https://github.com/pashkan111/python-tools"}
 black = "^23.11.0"
+pytest-mock = "^3.12.0"
 
 
 [build-system]
