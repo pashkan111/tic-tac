@@ -14,7 +14,7 @@ import itertools
 from .schemas import GameRedisSchema
 
 # в редисе есть игрок текущий ход
-# нужна функция в которую я передам этого игрока, создастся итератор и я могу 
+# нужна функция в которую я передам этого игрока, создастся итератор и я могу
 # переключать игроков бесконечно
 
 
@@ -34,20 +34,23 @@ class Game(GameAbstract):
         board: BoardArray,
         checker: CheckerArray,
         players: list[Player],
-        current_move_player: Player | None = None
+        current_move_player: Player | None = None,
+        room_id: uuid.UUID | None = None,
     ):
         self.repo = repo
         self.board = board
         self.checker = checker
         self.players = players
-        self.room_id = uuid.uuid4()
+        self.room_id = room_id or uuid.uuid4()
         self.current_move_player = current_move_player
 
     def _set_player_iterator(self, current_move_player: Player) -> None:
-        players = sorted(self.players, key=lambda player: player.id == current_move_player.id)
+        players = sorted(
+            self.players, key=lambda player: player.id == current_move_player.id
+        )
         players_iterator = itertools.repeat(players)
         self._player_iterator = itertools.chain.from_iterable(players_iterator)
-    
+
     def _switch_player(self) -> Player:
         self.current_move_player = next(self._player_iterator)
         return self.current_move_player
@@ -63,7 +66,7 @@ class Game(GameAbstract):
     async def start(self):
         if not self._check_players_count():
             raise PlayersNotEnoughException(room_id=self.room_id)
-        
+
         self._set_chips_to_players()
 
         if self.current_move_player is None:
@@ -78,11 +81,7 @@ class Game(GameAbstract):
         if self._started is False:
             raise GameNotStartedException(room_id=self.room_id)
 
-        self.board.make_move(
-            player=self.current_move_player, 
-            row=row, 
-            col=col
-        )
+        self.board.make_move(player=self.current_move_player, row=row, col=col)
         check_result = self.checker.check_win(self.board)
         self._switch_player()
         await self._save_state()
@@ -93,6 +92,6 @@ class Game(GameAbstract):
             room_id=self.room_id,
             players=self.players,
             current_move_player=self.current_move_player,
-            board=self.board.board
+            board=self.board.board,
         )
         await self.repo.set_game(game_data)

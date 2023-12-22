@@ -4,36 +4,45 @@ from .board import BoardArray
 from .player import Player
 from .repository import repo
 import uuid
-from .schemas import GameRedisSchema
-# REQUEST: {
-#     rows_count: int
-# }
-# HEADERS: {
-#     token: str
-# }
-# RESPONSE: {
-#     game_started: bool
-#     partner_id: int | None
-#     room_id: UUID | None
-# }
-
-# Когда игрок начинает новую игру, уходит пост запрос на бэк,
-# там в редисе смотрим наличие ожидающего игрока с
-# таким количеством клеток, если он есть, то
-# возвращаем его айди и game_started=True и айди комнаты
-# Если нет, то создаем в редисе новую запись и game_started=False
+from .exceptions import (
+    NotEnoughArgsException,
+    RoomNotFoundInRepoException,
+    PartnerDoesNotExistsException,
+)
 
 
 class Authentication:
     ...
 
 
-async def create_game(*, player_id: int | None = None, rows_count: int | None = None, room_id: uuid.UUID | None = None) -> Game | None:
-    game_data = await repo.get_game(room_id)
+async def create_game(
+    *,
+    player_id: int | None = None,
+    rows_count: int | None = None,
+    room_id: uuid.UUID | None = None
+) -> Game:
+    if not (room_id or (rows_count and player_id)):
+        raise NotEnoughArgsException(
+            room_id=room_id, rows_count=rows_count, player_id=player_id
+        )
+
+    game_data = None
+    if room_id:
+        game_data = await repo.get_game(room_id)
+
+    if not game_data and not (rows_count and player_id):
+        raise RoomNotFoundInRepoException(room_id=room_id)
+
     if game_data:
         board = BoardArray(board=game_data.board)
+        # TODO add checking players in waiting_list
         game = Game(
-            repo=repo, board=board, checker=CheckerArray(), players=game_data.players, current_move_player=game_data.current_move_player
+            repo=repo,
+            board=board,
+            checker=CheckerArray(),
+            players=game_data.players,
+            current_move_player=game_data.current_move_player,
+            room_id=room_id,
         )
         await game.start()
         return game
@@ -42,7 +51,7 @@ async def create_game(*, player_id: int | None = None, rows_count: int | None = 
     new_player = Player(id=player_id, chip=None)
     if not partner:
         await repo.set_players_to_wait_list(new_player)
-        return
+        raise PartnerDoesNotExistsException(room_id=room_id)
 
     board = BoardArray(rows_count=rows_count)
     new_game = Game(
@@ -53,7 +62,12 @@ async def create_game(*, player_id: int | None = None, rows_count: int | None = 
 
 
 async def main(
-    *, player_id: int | None = None, rows_count: int | None = None, room_id: uuid.UUID | None = None
-) -> Game:
-    game = await create_game(player_id=player_id, rows_count=rows_count, room_id=room_id)
+    *,
+    player_id: int | None = None,
+    rows_count: int | None = None,
+    room_id: uuid.UUID | None = None
+) -> Game | None:
+    game = await create_game(
+        player_id=player_id, rows_count=rows_count, room_id=room_id
+    )
     return game

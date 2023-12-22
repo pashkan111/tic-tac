@@ -1,7 +1,7 @@
 from .interfaces import RepositoryAbstract, BoardAbstract, PlayerAbstract
 from .player import Player
 from .board import BoardArray
-from .schemas import GameRedisSchema 
+from .schemas import GameRedisSchema
 from uuid import UUID
 
 
@@ -21,9 +21,7 @@ class Repository(RepositoryAbstract):
     async def get_game(self, room_id: UUID) -> GameRedisSchema | None:
         ...
 
-    async def check_players_in_wait_list(
-        self, rows_count: int
-    ) -> Player | None:
+    async def check_players_in_wait_list(self, rows_count: int) -> Player | None:
         ...
 
     async def set_players_to_wait_list(self, player: Player) -> Player:

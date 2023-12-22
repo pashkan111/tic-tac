@@ -10,3 +10,6 @@ class Player(PlayerAbstract):
 
     def __repr__(self) -> str:
         return f"<Player {self.id}>"
+
+    def __eq__(self, __value: "Player") -> bool:
+        return self.id == __value.id

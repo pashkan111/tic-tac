@@ -54,7 +54,6 @@ class CheckerAbstract(abc.ABC):
         ...
 
 
-
 class PlayerAbstract(abc.ABC):
     id: int
     chip: Chips | None

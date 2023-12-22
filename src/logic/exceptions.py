@@ -25,3 +25,25 @@ class PlayersNotEnoughException(AbstractException):
 
 class GameNotStartedException(AbstractException):
     message = "Game not started. Call start() func. Room id: {room_id}"
+
+
+class NotEnoughArgsException(AbstractException):
+    message = "Not Enough Args. Args: {args}"
+
+    def __init__(self, **args):
+        args_to_message = ""
+        for k, v in args.items():
+            args_to_message += f"{k}={str(v)}; "
+        self.message = self.message.format(args=args_to_message)
+        super().__init__(self.message)
+
+
+class RoomNotFoundInRepoException(AbstractException):
+    message = "Room Not Found In Repo. Room id: {room_id}"
+
+
+class PartnerDoesNotExistsException(AbstractException):
+    message = (
+        "Game has not been created. There is no partner "
+        "for this player. Room id: {room_id}"
+    )

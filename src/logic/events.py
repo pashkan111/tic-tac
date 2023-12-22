@@ -2,9 +2,10 @@ from dataclasses import dataclass
 from enum import StrEnum
 import uuid
 
+
 class ClientEventType(StrEnum):
-    START = 'START'
-    MOVE = 'MOVE'
+    START = "START"
+    MOVE = "MOVE"
 
 
 @dataclass
