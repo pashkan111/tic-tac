@@ -11,10 +11,6 @@ from .exceptions import (
 )
 
 
-class Authentication:
-    ...
-
-
 async def create_game(
     *,
     player_id: int | None = None,

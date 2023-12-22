@@ -1,4 +1,4 @@
-from .interfaces import RepositoryAbstract, BoardAbstract, PlayerAbstract
+from .interfaces import RepositoryAbstract
 from .player import Player
 from .board import BoardArray
 from .schemas import GameRedisSchema
