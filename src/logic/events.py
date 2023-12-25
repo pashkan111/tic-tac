@@ -9,7 +9,7 @@ class ClientEventType(StrEnum):
 
 
 @dataclass
-class MoveSchema:
+class MoveEvent:
     room_id: uuid.UUID
     player_id: int
     row: int
@@ -17,6 +17,6 @@ class MoveSchema:
 
 
 @dataclass
-class GameStartSchema:
+class GameStartEvent:
     player_id: int
     rows_count: int

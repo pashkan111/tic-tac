@@ -1,7 +1,7 @@
 from .interfaces import BoardAbstract
 from .player import Player
 import settings
-from typing import TypeAlias, Any
+from typing import TypeAlias
 from .exceptions import MakeMoveException, RowsNumberException
 
 Board: TypeAlias = list[list[int]]

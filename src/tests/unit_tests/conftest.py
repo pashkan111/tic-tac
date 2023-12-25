@@ -1,6 +1,6 @@
 from src.logic.board import BoardArray
 from src.logic.checker import CheckerArray
-from src.logic.repository import Repository
+from src.repo.repository_game import RepositoryGame
 from src.logic.player import Player
 from src.logic.interfaces import Chips
 import pytest
@@ -22,8 +22,8 @@ def board_fixture() -> BoardArray:
 
 
 @pytest.fixture()
-def repo_fixture() -> Repository:
-    return Repository()
+def repo_fixture() -> RepositoryGame:
+    return RepositoryGame()
 
 
 @pytest.fixture()

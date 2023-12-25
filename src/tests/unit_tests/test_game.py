@@ -133,11 +133,10 @@ async def test_game__set_state(
     player1_fixture,
     player2_fixture,
     board_fixture,
-    repo_fixture,
     checker_fixture,
     mocker,
 ):
-    repo_mocked = mocker.patch("src.logic.repository.repo")
+    repo_mocked = mocker.patch("src.repo.repository_game.repo")
     repo_mocked.configure_mock(**{"set_game": AsyncMock(asyncio.Future())})
 
     game = Game(
@@ -168,7 +167,7 @@ async def test_game__set_state__check_call_count(
     checker_fixture,
     mocker,
 ):
-    repo_mocked = mocker.patch("src.logic.repository.repo")
+    repo_mocked = mocker.patch("src.repo.repository_game.repo")
     repo_mocked.configure_mock(**{"set_game": AsyncMock(asyncio.Future())})
 
     game = Game(

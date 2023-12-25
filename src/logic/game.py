@@ -1,27 +1,22 @@
 from .interfaces import (
-    GameAbstract,
-    CheckResult,
-    Chips,
+    GameAbstract
 )
+from .schemas import Chips, CheckResult
 from collections.abc import Iterator
 from .board import BoardArray
 from .player import Player
 from .checker import CheckerArray
-from .repository import Repository
+from src.repo.repository_game import RepositoryGame
 from .exceptions import PlayersNotEnoughException, GameNotStartedException
 import uuid
 import itertools
 from .schemas import GameRedisSchema
 
-# в редисе есть игрок текущий ход
-# нужна функция в которую я передам этого игрока, создастся итератор и я могу
-# переключать игроков бесконечно
-
 
 class Game(GameAbstract):
     room_id: uuid.UUID
     players: list[Player]
-    repo: Repository
+    repo: RepositoryGame
     board: BoardArray
     checker: CheckerArray
     current_move_player: Player
@@ -30,7 +25,7 @@ class Game(GameAbstract):
 
     def __init__(
         self,
-        repo: Repository,
+        repo: RepositoryGame,
         board: BoardArray,
         checker: CheckerArray,
         players: list[Player],

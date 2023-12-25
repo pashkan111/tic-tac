@@ -1,39 +1,8 @@
 import abc
 from typing import Any
 import uuid
-from dataclasses import dataclass
-from enum import StrEnum, Enum
-from .exceptions import ChipDoesNotExistsException
-
-
-class MoveStatus(StrEnum):
-    VICTORY = "VICTORY"
-    END = "END"
-    NEXT_MOVE = "NEXT_MOVE"
-
-
-@dataclass(frozen=True, slots=True)
-class MoveEvent:
-    status: MoveStatus
-    winner: int | None = None
-
-
-class Chips(Enum):
-    X = 1
-    O = 2
-
-    @classmethod
-    def get_chip_by_id(cls, id: int) -> "Chips":
-        for chip in cls:
-            if chip.value == id:
-                return chip
-        raise ChipDoesNotExistsException(id=id)
-
-
-@dataclass
-class CheckResult:
-    is_winner: bool
-    chip: Chips | None = None
+from .schemas import Chips
+from .events import MoveEvent
 
 
 class CheckerAbstract(abc.ABC):
@@ -71,7 +40,7 @@ class BoardAbstract(abc.ABC):
         pass
 
 
-class RepositoryAbstract(abc.ABC):
+class RepositoryGameAbstract(abc.ABC):
     @abc.abstractmethod
     async def set_board(self, board: BoardAbstract):
         ...
@@ -99,7 +68,7 @@ class GameAbstract(abc.ABC):
     __slots__ = ("room_id", "players", "repo", "board", "checker", "next_move")
     room_id: uuid.UUID
     players: list[PlayerAbstract]
-    repo: RepositoryAbstract
+    repo: RepositoryGameAbstract
     board: BoardAbstract
     checker: CheckerAbstract
     next_move: PlayerAbstract

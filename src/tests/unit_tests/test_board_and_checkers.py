@@ -1,6 +1,6 @@
 from src.logic.checker import CheckerArray
-from src.logic.interfaces import CheckResult, Chips
-from src.logic.board import BoardArray, Board
+from src.logic.schemas import CheckResult, Chips
+from src.logic.board import BoardArray
 from src.logic.player import Player
 from settings import MAX_ROWS, MIN_ROWS
 import pytest

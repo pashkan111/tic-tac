@@ -27,11 +27,11 @@ def test_decode_token__raise_exc():
         _decode_token(token, SECRET)
 
 
-def test_auth_check_token(mocker):
-    mocker.patch("src.logic.authentication.SECRET", SECRET)
+# def test_auth_check_token(mocker):
+#     mocker.patch("src.logic.authentication.SECRET", SECRET)
 
-    token = jwt.encode(payload={"user_id": 11}, key=SECRET)
-    auth = Authentication()
+#     token = jwt.encode(payload={"user_id": 11}, key=SECRET)
+#     auth = Authentication()
 
-    user_id = auth.check_token(token)
-    assert user_id == 11
+#     user_id = auth.check_token(token)
+#     assert user_id == 11

@@ -2,7 +2,7 @@ from .game import Game
 from .checker import CheckerArray
 from .board import BoardArray
 from .player import Player
-from .repository import repo
+from ..repo.repository_game import repo
 import uuid
 from .exceptions import (
     NotEnoughArgsException,

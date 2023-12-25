@@ -1,11 +1,11 @@
-from .interfaces import RepositoryAbstract
-from .player import Player
-from .board import BoardArray
-from .schemas import GameRedisSchema
+from src.logic.interfaces import RepositoryGameAbstract
+from src.logic.player import Player
+from src.logic.board import BoardArray
+from src.logic.schemas import GameRedisSchema
 from uuid import UUID
 
 
-class Repository(RepositoryAbstract):
+class RepositoryGame(RepositoryGameAbstract):
     async def set_board(self, board: BoardArray):
         ...
 
@@ -28,4 +28,4 @@ class Repository(RepositoryAbstract):
         ...
 
 
-repo = Repository()
+repo = RepositoryGame()
