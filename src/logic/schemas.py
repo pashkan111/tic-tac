@@ -44,6 +44,6 @@ class CheckResult:
 @dataclass
 class GameRedisSchema:
     room_id: UUID
-    players: list['Player']
-    current_move_player: 'Player'
-    board: 'Board'
+    players: list["Player"]
+    current_move_player: "Player"
+    board: "Board"

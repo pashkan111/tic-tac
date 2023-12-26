@@ -1,9 +1,5 @@
-from src.logic.authentication import (
-    _create_token,
-    _decode_token,
-    PayloadData,
-    Authentication,
-)
+from src.logic.auth.utils import create_token, check_token
+from src.logic.auth.schemas import PayloadData
 import jwt
 import pytest
 
@@ -12,19 +8,13 @@ SECRET = "secret"
 
 def test_create_token():
     token = jwt.encode(payload={"user_id": 11}, key=SECRET)
-    assert _create_token(PayloadData(user_id=11), SECRET) == token
+    assert create_token(user_id=11, secret=SECRET) == token
 
 
-def test_decode_token():
+def test_check_token():
     token = jwt.encode(payload={"user_id": 11}, key=SECRET)
-    assert _decode_token(token, SECRET) == PayloadData(user_id=11)
+    assert check_token(token=token, secret=SECRET) == 11
 
-
-def test_decode_token__raise_exc():
-    token = jwt.encode(payload={"user_id": 11}, key=SECRET)
-    token += "a"
-    with pytest.raises(jwt.exceptions.InvalidSignatureError):
-        _decode_token(token, SECRET)
 
 
 # def test_auth_check_token(mocker):

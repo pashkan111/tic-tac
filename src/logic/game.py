@@ -1,6 +1,4 @@
-from .interfaces import (
-    GameAbstract
-)
+from .interfaces import GameAbstract
 from .schemas import Chips, CheckResult
 from collections.abc import Iterator
 from .board import BoardArray
