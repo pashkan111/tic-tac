@@ -33,7 +33,7 @@ class RepositoryCommon:
             SELECT * FROM users
             WHERE id = $1
         """
-        user = await self.pg.get().fetchval(query, id)
+        user = await self.pg.get().fetchrow(query, id)
         if user:
             return UserData(
                 user_id=user["id"], username=user["username"], password=user["password"]

@@ -4,8 +4,10 @@ from src.presentation.entities.auth_entities import (
     RegisterUserResponse,
     LoginUserRequest,
     LoginUserResponse,
+    CheckTokenRequest,
+    CheckTokenResponse
 )
-from src.logic.auth.authentication import register_user, login_user
+from src.logic.auth.authentication import register_user, login_user, check_user
 
 user_router = APIRouter(prefix="/auth")
 
@@ -20,3 +22,9 @@ async def register_user_handler(data: RegisterUserRequest):
 async def login_user_handler(data: LoginUserRequest):
     token = await login_user(username=data.username, password=data.password)
     return LoginUserResponse(token=token)
+
+
+@user_router.post("/check_token", response_model=CheckTokenResponse)
+async def check_token_handler(data: CheckTokenRequest):
+    user_id = await check_user(token=data.token)
+    return CheckTokenResponse(user_id=user_id)

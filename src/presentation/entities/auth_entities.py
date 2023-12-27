@@ -18,3 +18,11 @@ class LoginUserRequest(pd.BaseModel):
 
 class LoginUserResponse(pd.BaseModel):
     token: str
+
+
+class CheckTokenRequest(pd.BaseModel):
+    token: str
+
+
+class CheckTokenResponse(pd.BaseModel):
+    user_id: int
