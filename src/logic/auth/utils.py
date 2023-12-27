@@ -1,17 +1,19 @@
 import jwt
 from dataclasses import asdict
 from .schemas import PayloadData, Token, UserId
-import bcrypt
+
+from passlib.context import CryptContext
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def get_password_hash(password: str) -> str:
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password.encode(), salt)
-    return str(hashed)
+    return pwd_context.hash(password)
 
 
 def check_password(*, hash: str, password: str) -> bool:
-    return bcrypt.checkpw(password.encode(), hash.encode())
+    return pwd_context.verify(password, hash)
 
 
 def check_token(*, token: str, secret: str) -> UserId:
@@ -24,6 +26,4 @@ def check_token(*, token: str, secret: str) -> UserId:
 
 
 def create_token(*, user_id: UserId, secret: str) -> Token:
-    return jwt.encode(
-        payload=asdict(PayloadData(user_id=user_id)), key=secret
-    )
+    return jwt.encode(payload=asdict(PayloadData(user_id=user_id)), key=secret)

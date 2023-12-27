@@ -14,7 +14,7 @@ class RepositoryCommon:
             INSERT INTO users (username, password)
             VALUES ($1, $2) RETURNING id
         """
-        return await self.pg.get().execute(insert_query, username, password)
+        return await self.pg.get().fetchval(insert_query, username, password)
 
     async def get_user_by_username(self, username: str) -> UserData | None:
         query = """
@@ -24,9 +24,7 @@ class RepositoryCommon:
         user = await self.pg.get().fetchrow(query, username)
         if user:
             return UserData(
-                user_id=user['id'],
-                username=user['username'],
-                password=user['password']
+                user_id=user["id"], username=user["username"], password=user["password"]
             )
         return None
 
@@ -38,9 +36,7 @@ class RepositoryCommon:
         user = await self.pg.get().fetchval(query, id)
         if user:
             return UserData(
-                user_id=user['id'],
-                username=user['username'],
-                password=user['password']
+                user_id=user["id"], username=user["username"], password=user["password"]
             )
         return None
 
