@@ -6,7 +6,7 @@ from .schemas import Chips
 @dataclass
 class Player(PlayerAbstract):
     id: int
-    chip: Chips | None
+    chip: Chips | None = None
 
     def __eq__(self, __value: "Player") -> bool:
         return self.id == __value.id

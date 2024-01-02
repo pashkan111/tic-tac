@@ -10,6 +10,8 @@ from .exceptions import (
     PartnerDoesNotExistsException,
 )
 
+# TODO game must be found by player id
+
 
 async def create_game(
     *,
@@ -46,7 +48,7 @@ async def create_game(
     partner = await repo.check_players_in_wait_list(rows_count)
     new_player = Player(id=player_id, chip=None)
     if not partner:
-        await repo.set_players_to_wait_list(new_player)
+        await repo.set_players_to_wait_list(player=new_player, rows_count=rows_count)
         raise PartnerDoesNotExistsException(room_id=room_id)
 
     board = BoardArray(rows_count=rows_count)

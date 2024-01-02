@@ -15,3 +15,4 @@ POSTGRES_CONNECTION_STRING = (
 )
 
 REDIS_CONNECTION_STRING = "redis://localhost:6379"
+REDIS_PLAYERS_WAITING_LIST_NAME = "players_waiting_list"
