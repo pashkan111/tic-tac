@@ -41,27 +41,7 @@ class BoardAbstract(abc.ABC):
 
 
 class RepositoryGameAbstract(abc.ABC):
-    @abc.abstractmethod
-    async def set_board(self, board: BoardAbstract):
-        ...
-
-    @abc.abstractmethod
-    async def get_board(self) -> BoardAbstract:
-        ...
-
-    @abc.abstractmethod
-    async def set_current_move(self, next_move: PlayerAbstract):
-        ...
-
-    @abc.abstractmethod
-    async def check_players_in_wait_list(
-        self, rows_count: int
-    ) -> PlayerAbstract | None:
-        ...
-
-    @abc.abstractmethod
-    async def set_players_to_wait_list(self, rows_count: int) -> PlayerAbstract | None:
-        ...
+    ...
 
 
 class GameAbstract(abc.ABC):

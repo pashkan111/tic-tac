@@ -4,6 +4,7 @@ from src.repo.repository_game import RepositoryGame
 from src.logic.player import Player
 from src.logic.interfaces import Chips
 import pytest
+from unittest.mock import Mock
 
 
 @pytest.fixture()
@@ -23,7 +24,7 @@ def board_fixture() -> BoardArray:
 
 @pytest.fixture()
 def repo_fixture() -> RepositoryGame:
-    return RepositoryGame()
+    return RepositoryGame(redis_client=Mock())
 
 
 @pytest.fixture()

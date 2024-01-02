@@ -4,11 +4,14 @@ from uuid import UUID
 from dataclasses import dataclass
 from enum import StrEnum, Enum
 from .exceptions import ChipDoesNotExistsException
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeAlias
 
 if TYPE_CHECKING:
     from .player import Player
-    from .board import Board
+    from .board import Board, BoardArray
+
+
+PlayerId: TypeAlias = int
 
 
 class MoveStatus(StrEnum):
@@ -46,4 +49,12 @@ class GameRedisSchema:
     room_id: UUID
     players: list["Player"]
     current_move_player: "Player"
+    board: "Board"
+
+
+@dataclass
+class GameRedisWriteSchema:
+    room_id: UUID
+    players: list[PlayerId]
+    current_move_player: PlayerId
     board: "Board"

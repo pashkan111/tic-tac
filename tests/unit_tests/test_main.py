@@ -44,6 +44,8 @@ async def test_create_game__enough_args(
     player2_fixture,
     board_fixture,
 ):
+    mocker.patch("src.logic.main.repo.set_game")
+
     repo_get_game_mocked = mocker.patch("src.logic.main.repo.get_game")
     repo_get_game_mocked.configure_mock(
         return_value=GameRedisSchema(
@@ -131,6 +133,8 @@ async def test_create_game__game_in_repo(
 ):
     room_id = uuid.uuid4()
 
+    mocker.patch("src.logic.main.repo.set_game")
+
     repo_get_game_mocked = mocker.patch("src.logic.main.repo.get_game")
     repo_get_game_mocked.configure_mock(
         return_value=GameRedisSchema(
@@ -155,6 +159,8 @@ async def test_create_game__game_not_in_repo(
 ):
     repo_get_game_mocked = mocker.patch("src.logic.main.repo.get_game")
     repo_get_game_mocked.configure_mock(return_value=None)
+
+    mocker.patch("src.logic.main.repo.set_game")
 
     repo_check_players_in_wait_list_mocked = mocker.patch(
         "src.logic.main.repo.check_players_in_wait_list"

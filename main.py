@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from src.presentation.handlers.auth_handlers import user_router
+from src.presentation.handlers.game_handlers import game_router
 
 # from fastapi.responses import JSONResponse
 # from fastapi.exceptions import RequestValidationError
@@ -18,10 +19,10 @@ async def lifespan(app: FastAPI):
 
     await pg.create_pool()
     yield
-    # Clean up the ML models and release the resources
 
 
 app = FastAPI(lifespan=lifespan)
 
 
 app.include_router(user_router)
+app.include_router(game_router)

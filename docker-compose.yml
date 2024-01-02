@@ -12,3 +12,12 @@ services:
       - ./volumes/postgresql/pg-data:/var/lib/postgresql/data
     ports:
       - ${TEST_POSTGRES_PORT}:5432
+
+  test_redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=${TEST_REDIS_PASSWORD}
+      - REDIS_PORT=${TEST_REDIS_PORT}

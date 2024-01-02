@@ -5,7 +5,7 @@ from src.presentation.entities.auth_entities import (
     LoginUserRequest,
     LoginUserResponse,
     CheckTokenRequest,
-    CheckTokenResponse
+    CheckTokenResponse,
 )
 from src.logic.auth.authentication import register_user, login_user, check_user
 
