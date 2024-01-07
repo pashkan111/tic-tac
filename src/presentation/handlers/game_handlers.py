@@ -5,7 +5,7 @@ from src.logic.auth.authentication import check_user
 from src.logic.exceptions import (
     NotEnoughArgsException,
     RoomNotFoundInRepoException,
-    PartnerDoesNotExistsException,
+    PlayersNotEnoughException,
 )
 
 
@@ -23,7 +23,7 @@ async def create_game_handler(data: GameStartRequest):
         game = await create_game(player_id=user_id, rows_count=data.rows_count)
     except (RoomNotFoundInRepoException, NotEnoughArgsException) as exc:
         raise exceptions.HTTPException(status_code=400, detail=exc.message)
-    except PartnerDoesNotExistsException:
+    except PlayersNotEnoughException:
         return GameStartResponse(game_started=False, room_id=None, partner_id=None)
 
     return GameStartResponse(

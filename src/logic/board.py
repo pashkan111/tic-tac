@@ -9,8 +9,10 @@ Board: TypeAlias = list[list[int]]
 
 class BoardArray(BoardAbstract):
     board: Board
+    rows_count: int
 
     def __init__(self, *, rows_count: int | None = None, board: Board | None = None):
+        self.rows_count = rows_count
         if not board:
             self._create_board(rows_count)
         else:

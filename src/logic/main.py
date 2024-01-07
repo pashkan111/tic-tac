@@ -7,12 +7,13 @@ import uuid
 from .exceptions import (
     NotEnoughArgsException,
     RoomNotFoundInRepoException,
-    PartnerDoesNotExistsException,
+    PlayersNotEnoughException,
 )
 from .schemas import GameRedisSchema
 import asyncio
 
 # TODO game must be found by player id
+
 
 def _make_game(game_data: GameRedisSchema) -> Game:
     board = BoardArray(board=game_data.board)
@@ -25,6 +26,7 @@ def _make_game(game_data: GameRedisSchema) -> Game:
         current_move_player=game_data.current_move_player,
         room_id=game_data.room_id,
     )
+
 
 """
 1. Проверка на наличие аргументов либо room_id либо (player_id, rows_count)
@@ -46,6 +48,7 @@ def _make_game(game_data: GameRedisSchema) -> Game:
     Если нет, то PartnerDoesNotExistsException и добавляем игрока
     в список ожидания
 """
+
 
 async def create_game(
     *,
@@ -69,10 +72,9 @@ async def create_game(
         game = _make_game(game_data)
         await game.start()
         return game
-    
-    # check existing games for player
+
     existing_game_id = await repo.get_game_players(player_id)
-    
+
     if existing_game_id:
         game_data = await repo.get_game(existing_game_id)
         if game_data:
@@ -84,22 +86,13 @@ async def create_game(
     new_player = Player(id=player_id, chip=None)
     if not partner:
         await repo.set_players_to_wait_list(player=new_player, rows_count=rows_count)
-        raise PartnerDoesNotExistsException(room_id=room_id)
+        raise PlayersNotEnoughException(room_id=room_id)
 
     board = BoardArray(rows_count=rows_count)
     new_game = Game(
         repo=repo, board=board, checker=CheckerArray(), players=[partner, new_player]
     )
     await new_game.start()
-
-    await asyncio.gather(
-        *[
-            repo.set_game_players(player_id=partner.id, room_id=new_game.room_id),
-            repo.set_game_players(player_id=new_player.id, room_id=new_game.room_id),
-            repo.add_players_to_room(player_ids=[new_player.id, partner.id], room_id=new_game.room_id),
-            repo.remove_players_from_wait_list(rows_count=rows_count)
-        ]
-    )
 
     return new_game
 
@@ -115,10 +108,10 @@ async def main(
     )
     return game
 
+
 """
 1. Add new methods for adding players to rooms
 so it could be possible to find if player has active game
 
 
 """
-

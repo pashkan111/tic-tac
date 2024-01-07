@@ -52,12 +52,14 @@ class RepositoryGame(RepositoryGameAbstract):
 
     async def add_players_to_room(self, player_ids: list[int], room_id: UUID) -> None:
         await self.redis_client.get().add_to_set(
-            name=f'{settings.REDIS_PLAYERS_BY_ROOMS}:{str(room_id)}', values=list(map(str, player_ids)),
+            name=f"{settings.REDIS_PLAYERS_BY_ROOMS}:{str(room_id)}",
+            values=list(map(str, player_ids)),
         )
 
     async def remove_player_from_room(self, player_id: int, room_id: UUID) -> None:
         await self.redis_client.get().remove_from_set(
-            name=f'{settings.REDIS_PLAYERS_BY_ROOMS}:{str(room_id)}', values=[str(player_id)],
+            name=f"{settings.REDIS_PLAYERS_BY_ROOMS}:{str(room_id)}",
+            values=[str(player_id)],
         )
 
     async def set_game_players(self, *, player_id: int, room_id: UUID):
@@ -69,10 +71,10 @@ class RepositoryGame(RepositoryGameAbstract):
 
     async def get_game_players(self, player_id: int) -> UUID | None:
         room_id = await self.redis_client.get().hget(
-            name=settings.REDIS_ACTIVE_PLAYERS,
-            key=str(player_id)
+            name=settings.REDIS_ACTIVE_PLAYERS, key=str(player_id)
         )
         return room_id
+
 
 redis_client = RedisClient(settings.REDIS_CONNECTION_STRING)
 repo = RepositoryGame(redis_client=redis_client)

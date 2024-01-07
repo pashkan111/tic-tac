@@ -9,6 +9,7 @@ from .exceptions import PlayersNotEnoughException, GameNotStartedException
 import uuid
 import itertools
 from .schemas import GameRedisSchema
+import asyncio
 
 
 class Game(GameAbstract):
@@ -87,4 +88,22 @@ class Game(GameAbstract):
             current_move_player=self.current_move_player,
             board=self.board.board,
         )
-        await self.repo.set_game(game_data)
+
+        await asyncio.gather(
+            *[
+                self.repo.set_game(game_data),
+                self.repo.set_game_players(
+                    player_id=self.players[0].id, room_id=self.room_id
+                ),
+                self.repo.set_game_players(
+                    player_id=self.players[1].id, room_id=self.room_id
+                ),
+                self.repo.add_players_to_room(
+                    player_ids=[self.players[0].id, self.players[1].id],
+                    room_id=self.room_id,
+                ),
+                self.repo.remove_players_from_wait_list(
+                    rows_count=self.board.rows_count
+                ),
+            ]
+        )
