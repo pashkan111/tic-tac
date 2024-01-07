@@ -2,16 +2,50 @@ from .game import Game
 from .checker import CheckerArray
 from .board import BoardArray
 from .player import Player
-from ..repo.repository_game import repo
+from src.repo.repository_game import repo
 import uuid
 from .exceptions import (
     NotEnoughArgsException,
     RoomNotFoundInRepoException,
     PartnerDoesNotExistsException,
 )
+from .schemas import GameRedisSchema
+import asyncio
 
 # TODO game must be found by player id
 
+def _make_game(game_data: GameRedisSchema) -> Game:
+    board = BoardArray(board=game_data.board)
+    # TODO add checking players in waiting_list
+    return Game(
+        repo=repo,
+        board=board,
+        checker=CheckerArray(),
+        players=game_data.players,
+        current_move_player=game_data.current_move_player,
+        room_id=game_data.room_id,
+    )
+
+"""
+1. Проверка на наличие аргументов либо room_id либо (player_id, rows_count)
+
+Если есть только room_id, то,
+    1. Проверяем наличие игры в редисе, если она есть, то проверяем 
+        Дату создания
+Есди нет, то кидаем исключение что игра не найдена
+
+Если только (player_id, rows_count) тогда:
+    1. Проверяем, есть ли у игрока активные игры. Если есть, то
+        получаем ее и возвращаем
+    
+    Если нет, то пытаемся получить соперника для него из списка ожидания 
+    Если соперник есть, то создаем игру, возвращаем ее,
+      удаляем партнера из списка ожидания,
+      добавляем игрока в комнату players_by_rooms
+      добавляем игрока в словарь active_players
+    Если нет, то PartnerDoesNotExistsException и добавляем игрока
+    в список ожидания
+"""
 
 async def create_game(
     *,
@@ -32,18 +66,19 @@ async def create_game(
         raise RoomNotFoundInRepoException(room_id=room_id)
 
     if game_data:
-        board = BoardArray(board=game_data.board)
-        # TODO add checking players in waiting_list
-        game = Game(
-            repo=repo,
-            board=board,
-            checker=CheckerArray(),
-            players=game_data.players,
-            current_move_player=game_data.current_move_player,
-            room_id=room_id,
-        )
+        game = _make_game(game_data)
         await game.start()
         return game
+    
+    # check existing games for player
+    existing_game_id = await repo.get_game_players(player_id)
+    
+    if existing_game_id:
+        game_data = await repo.get_game(existing_game_id)
+        if game_data:
+            game = _make_game(game_data)
+            await game.start()
+            return game
 
     partner = await repo.check_players_in_wait_list(rows_count)
     new_player = Player(id=player_id, chip=None)
@@ -56,6 +91,16 @@ async def create_game(
         repo=repo, board=board, checker=CheckerArray(), players=[partner, new_player]
     )
     await new_game.start()
+
+    await asyncio.gather(
+        *[
+            repo.set_game_players(player_id=partner.id, room_id=new_game.room_id),
+            repo.set_game_players(player_id=new_player.id, room_id=new_game.room_id),
+            repo.add_players_to_room(player_ids=[new_player.id, partner.id], room_id=new_game.room_id),
+            repo.remove_players_from_wait_list(rows_count=rows_count)
+        ]
+    )
+
     return new_game
 
 
@@ -69,3 +114,11 @@ async def main(
         player_id=player_id, rows_count=rows_count, room_id=room_id
     )
     return game
+
+"""
+1. Add new methods for adding players to rooms
+so it could be possible to find if player has active game
+
+
+"""
+

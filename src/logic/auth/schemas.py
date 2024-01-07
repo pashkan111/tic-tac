@@ -16,3 +16,9 @@ class UserData:
     user_id: UserId
     username: str
     password: str
+
+
+@dataclass(slots=True, frozen=True)
+class UserLoginData:
+    user_id: UserId
+    token: Token

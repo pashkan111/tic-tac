@@ -1,5 +1,6 @@
 from src.logic.main import create_game
 import pytest
+from unittest.mock import call
 import uuid
 from src.logic.exceptions import (
     NotEnoughArgsException,
@@ -60,6 +61,13 @@ async def test_create_game__enough_args(
         "src.logic.main.repo.check_players_in_wait_list"
     )
     repo_check_players_in_wait_list_mocked.configure_mock(return_value=player1_fixture)
+
+    repo_get_game_players_mocked = mocker.patch(
+        "src.logic.main.repo.get_game_players"
+    )
+    repo_get_game_players_mocked.configure_mock(return_value=None)
+
+    mocker.patch("src.logic.main.repo.add_players_to_room")
 
     game = await create_game(
         player_id=player_id,
@@ -166,8 +174,28 @@ async def test_create_game__game_not_in_repo(
         "src.logic.main.repo.check_players_in_wait_list"
     )
     repo_check_players_in_wait_list_mocked.configure_mock(return_value=player1_fixture)
+    
+    repo_get_game_players_mocked = mocker.patch(
+        "src.logic.main.repo.get_game_players"
+    )
+    repo_get_game_players_mocked.configure_mock(return_value=None)
+    
+    repo_add_players_to_room_mocked = mocker.patch("src.logic.main.repo.add_players_to_room")
+    repo_remove_players_from_wait_list_mocked = mocker.patch("src.logic.main.repo.remove_players_from_wait_list")
+
+    repo_set_game_players_mocked = mocker.patch("src.logic.main.repo.set_game_players")
 
     game = await create_game(player_id=player2_fixture.id, rows_count=10)
 
     assert game.current_move_player == player1_fixture
     assert game.players == [player1_fixture, player2_fixture]
+    repo_add_players_to_room_mocked.assert_called_once_with(
+        player_ids=[player2_fixture.id, player1_fixture.id], room_id=game.room_id
+    )
+    repo_remove_players_from_wait_list_mocked.assert_called_once_with(
+        rows_count=10
+    )
+    repo_set_game_players_mocked.assert_has_calls([
+        call(player_id=player1_fixture.id, room_id=game.room_id),
+        call(player_id=player2_fixture.id, room_id=game.room_id),
+    ])

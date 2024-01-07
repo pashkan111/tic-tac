@@ -20,8 +20,8 @@ async def register_user_handler(data: RegisterUserRequest):
 
 @user_router.post("/login", response_model=LoginUserResponse)
 async def login_user_handler(data: LoginUserRequest):
-    token = await login_user(username=data.username, password=data.password)
-    return LoginUserResponse(token=token)
+    user_data = await login_user(username=data.username, password=data.password)
+    return LoginUserResponse(token=user_data.token, id=user_data.user_id)
 
 
 @user_router.post("/check_token", response_model=CheckTokenResponse)

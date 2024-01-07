@@ -3,7 +3,7 @@ from src.logic.player import Player
 from src.logic.schemas import GameRedisSchema
 from uuid import UUID
 from python_tools.redis_tools.redis_client import RedisClient
-from settings import REDIS_CONNECTION_STRING, REDIS_PLAYERS_WAITING_LIST_NAME
+import settings
 from orjson import dumps, loads
 from dataclasses import asdict
 from src.mappers.game_mapper import map_game_data_from_redis
@@ -31,24 +31,48 @@ class RepositoryGame(RepositoryGameAbstract):
 
     async def check_players_in_wait_list(self, rows_count: int) -> Player | None:
         player_id = await self.redis_client.get().hget(
-            name=REDIS_PLAYERS_WAITING_LIST_NAME, key=str(rows_count)
+            name=settings.REDIS_PLAYERS_WAITING_LIST_NAME, key=str(rows_count)
         )
         if not player_id:
             return None
         return Player(id=int(player_id))
 
-    async def set_players_to_wait_list(
-        self, *, player: Player, rows_count: int
-    ) -> Player:
+    async def set_players_to_wait_list(self, *, player: Player, rows_count: int):
         await self.redis_client.get().hset(
-            name=REDIS_PLAYERS_WAITING_LIST_NAME,
+            name=settings.REDIS_PLAYERS_WAITING_LIST_NAME,
             key=str(rows_count),
             value=str(player.id),
         )
 
-    async def get_room_id_by_player(self, player_id: int) -> UUID | None:
-        ...
+    async def remove_players_from_wait_list(self, rows_count: int):
+        await self.redis_client.get().hdel(
+            name=settings.REDIS_PLAYERS_WAITING_LIST_NAME,
+            keys=[str(rows_count)],
+        )
 
+    async def add_players_to_room(self, player_ids: list[int], room_id: UUID) -> None:
+        await self.redis_client.get().add_to_set(
+            name=f'{settings.REDIS_PLAYERS_BY_ROOMS}:{str(room_id)}', values=list(map(str, player_ids)),
+        )
 
-redis_client = RedisClient(REDIS_CONNECTION_STRING)
+    async def remove_player_from_room(self, player_id: int, room_id: UUID) -> None:
+        await self.redis_client.get().remove_from_set(
+            name=f'{settings.REDIS_PLAYERS_BY_ROOMS}:{str(room_id)}', values=[str(player_id)],
+        )
+
+    async def set_game_players(self, *, player_id: int, room_id: UUID):
+        await self.redis_client.get().hset(
+            name=settings.REDIS_ACTIVE_PLAYERS,
+            key=str(player_id),
+            value=str(room_id),
+        )
+
+    async def get_game_players(self, player_id: int) -> UUID | None:
+        room_id = await self.redis_client.get().hget(
+            name=settings.REDIS_ACTIVE_PLAYERS,
+            key=str(player_id)
+        )
+        return room_id
+
+redis_client = RedisClient(settings.REDIS_CONNECTION_STRING)
 repo = RepositoryGame(redis_client=redis_client)

@@ -1,5 +1,5 @@
 from settings import SECRET
-from .schemas import Token, UserId
+from .schemas import Token, UserId, UserLoginData
 from .utils import check_password, get_password_hash, create_token, check_token
 from src.repo.repository_common import repo
 
@@ -10,11 +10,12 @@ async def register_user(*, username: str, password: str) -> UserId:
     return user_id
 
 
-async def login_user(*, username: str, password: str) -> Token:
+async def login_user(*, username: str, password: str) -> UserLoginData:
     user = await repo.get_user_by_username(username)
     if not (user and check_password(hash=user.password, password=password)):
         raise Exception
-    return create_token(user_id=user.user_id, secret=SECRET)
+    token = create_token(user_id=user.user_id, secret=SECRET)
+    return UserLoginData(user_id=user.user_id, token=token)
 
 
 async def check_user(token: Token) -> UserId:

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from uuid import UUID
-
+from datetime import datetime
 from dataclasses import dataclass
 from enum import StrEnum, Enum
 from .exceptions import ChipDoesNotExistsException
@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, TypeAlias
 
 if TYPE_CHECKING:
     from .player import Player
-    from .board import Board, BoardArray
+    from .board import Board
 
 
 PlayerId: TypeAlias = int
@@ -50,6 +50,7 @@ class GameRedisSchema:
     players: list["Player"]
     current_move_player: "Player"
     board: "Board"
+    created: datetime = datetime.now()
 
 
 @dataclass

@@ -1,29 +1,86 @@
 import pytest
+import orjson
+
+
+@pytest.mark.asyncio
+async def test_create_game_handler__wrong_token(pg, test_client, redis):
+    await redis.hset(name="players_waiting_list", key="5", value="3")
+
+    response = await test_client.post(
+        "/game/create", json={"rows_count": "5", "token": "token"}
+    )
+
+    assert response.status_code == 401
 
 
 @pytest.mark.asyncio
 async def test_create_game_handler__partner_in_waiting_list(
-    pg, test_client, redis, player_1_token
+    pg, test_client, redis, player_1, mocker
 ):
-    await redis.get().hset(name="players_waiting_list", key="5", value="3")
+    await redis.hset(name="players_waiting_list", key="5", value="3")
 
     response = await test_client.post(
-        "/game/create", json={"rows_count": "5", "token": player_1_token}
+        "/game/create", json={"rows_count": "5", "token": player_1.token}
     )
 
     response = response.json()
     assert response["game_started"] == True
     assert response["partner_id"] == 3
+    assert orjson.loads(await redis.get(key=response["room_id"])) == {
+        "room_id": response["room_id"],
+        "players": [{"id": 3, "chip": 1}, {"id": player_1.id, "chip": 2}],
+        "current_move_player": {"id": 3, "chip": 1},
+        "board": [
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+        ],
+        "created": mocker.ANY
+    }
+    
+    assert await redis.get_set_values(f'players_by_rooms:{response["room_id"]}') == {str(player_1.id), '3'}
+    assert await redis.hget(name="players_waiting_list", key="5") is None
 
 
 @pytest.mark.asyncio
 async def test_create_game_handler__partner_not_in_waiting_list(
-    pg, test_client, redis, player_1_token
+    pg, test_client, redis, player_1
 ):
     response = await test_client.post(
-        "/game/create", json={"rows_count": "5", "token": player_1_token}
+        "/game/create", json={"rows_count": "5", "token": player_1.token}
     )
     response = response.json()
 
-    assert await redis.get().hget(name="players_waiting_list", key="5") == "1"
+    assert await redis.hget(name="players_waiting_list", key="5") == "1"
     assert response["game_started"] == False
+
+
+# @pytest.mark.asyncio
+# async def test_create_game_handler__thereis_a_game_with_such_player(
+#     pg, test_client, redis, player_1
+# ):
+#     room_id = uuid.uuid4()
+
+#     await redis.get().hset(name="active_players", key=str(player_1.id), value=str(room_id))
+#     await redis.get().set(key=str(room_id), value=orjson.dumps({
+#             "room_id": room_id,
+#             "players": [{"id": 3, "chip": 1}, {"id": player_1.id, "chip": 2}],
+#             "current_move_player": {"id": 3, "chip": 1},
+#             "board": [
+#                 [0, 0, 0, 0, 0],
+#                 [0, 0, 0, 0, 0],
+#                 [0, 0, 0, 0, 0],
+#                 [0, 0, 0, 0, 0],
+#                 [0, 0, 0, 0, 0],
+#             ],
+#         }))
+    
+#     response = await test_client.post(
+#         "/game/create", json={"rows_count": "5", "token": player_1.token}
+#     )
+#     response = response.json()
+
+#     assert await redis.get().hget(name="players_waiting_list", key="5") == "1"
+#     assert response["game_started"] == False
