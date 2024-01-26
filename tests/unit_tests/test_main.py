@@ -79,15 +79,10 @@ async def test_create_game__enough_args(
 
 async def test_create_game__enough_args__room_not_in_repo(
     mocker,
-    player1_fixture,
 ):
     repo_get_game_mocked = mocker.patch("src.logic.main.repo.get_game")
     repo_get_game_mocked.configure_mock(return_value=None)
 
-    repo_check_players_in_wait_list_mocked = mocker.patch(
-        "src.logic.main.repo.check_players_in_wait_list"
-    )
-    repo_check_players_in_wait_list_mocked.configure_mock(return_value=player1_fixture)
     with pytest.raises(RoomNotFoundInRepoException):
         await create_game(
             room_id=uuid.uuid4(),

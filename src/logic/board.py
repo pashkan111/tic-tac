@@ -8,6 +8,7 @@ Board: TypeAlias = list[list[int]]
 
 
 class BoardArray(BoardAbstract):
+    __slots__ = ["rows_count", "board"]
     board: Board
     rows_count: int
 

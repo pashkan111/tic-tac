@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from .schemas import Chips
 
 
-@dataclass
+@dataclass(slots=True)
 class Player(PlayerAbstract):
     id: int
     chip: Chips | None = None

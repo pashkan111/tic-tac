@@ -13,6 +13,15 @@ import asyncio
 
 
 class Game(GameAbstract):
+    __slots__ = (
+        "room_id",
+        "players",
+        "repo",
+        "board",
+        "checker",
+        "current_move_player",
+        "_player_iterator",
+    )
     room_id: uuid.UUID
     players: list[Player]
     repo: RepositoryGame
