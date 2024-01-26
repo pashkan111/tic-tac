@@ -1,6 +1,6 @@
 from src.logic.interfaces import RepositoryGameAbstract
-from src.logic.player import Player
-from src.logic.schemas import GameRedisSchema
+from src.logic.game.player import Player
+from src.logic.game.schemas import GameRedisSchema
 from uuid import UUID
 from python_tools.redis_tools.redis_client import RedisClient
 import settings

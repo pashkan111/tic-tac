@@ -1,7 +1,7 @@
-from src.logic.checker import CheckerArray
-from src.logic.schemas import CheckResult, Chips
-from src.logic.board import BoardArray
-from src.logic.player import Player
+from src.logic.game.checker import CheckerArray
+from src.logic.game.schemas import CheckResult, Chips
+from src.logic.game.board import BoardArray
+from src.logic.game.player import Player
 from settings import MAX_ROWS, MIN_ROWS
 import pytest
 from src.logic.exceptions import RowsNumberException

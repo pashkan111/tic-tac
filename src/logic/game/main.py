@@ -4,7 +4,7 @@ from .board import BoardArray
 from .player import Player
 from src.repo.repository_game import repo
 import uuid
-from .exceptions import (
+from ..exceptions import (
     NotEnoughArgsException,
     RoomNotFoundInRepoException,
     PlayersNotEnoughException,

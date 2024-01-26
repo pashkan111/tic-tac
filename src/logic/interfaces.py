@@ -1,7 +1,7 @@
 import abc
 from typing import Any
 import uuid
-from .schemas import Chips
+from .game.schemas import Chips
 from .events import MoveEvent
 
 

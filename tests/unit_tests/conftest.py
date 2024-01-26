@@ -1,7 +1,7 @@
-from src.logic.board import BoardArray
-from src.logic.checker import CheckerArray
+from src.logic.game.board import BoardArray
+from src.logic.game.checker import CheckerArray
 from src.repo.repository_game import RepositoryGame
-from src.logic.player import Player
+from src.logic.game.player import Player
 from src.logic.interfaces import Chips
 import pytest
 from unittest.mock import Mock

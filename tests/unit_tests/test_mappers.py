@@ -1,6 +1,5 @@
 from src.mappers.game_mapper import (
     map_game_data_from_redis,
-    GameRedisSchema,
     Player,
     Chips,
 )

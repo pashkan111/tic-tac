@@ -1,4 +1,4 @@
-from src.logic.main import create_game
+from src.logic.game.main import create_game
 import pytest
 from unittest.mock import call
 import uuid
@@ -7,8 +7,8 @@ from src.logic.exceptions import (
     RoomNotFoundInRepoException,
     PartnerDoesNotExistsException,
 )
-from src.logic.schemas import GameRedisSchema
-from src.logic.game import Game
+from src.logic.game.schemas import GameRedisSchema
+from src.logic.game.game import Game
 
 
 @pytest.mark.asyncio
@@ -45,9 +45,9 @@ async def test_create_game__enough_args(
     player2_fixture,
     board_fixture,
 ):
-    mocker.patch("src.logic.main.repo.set_game")
+    mocker.patch("src.logic.game.main.repo.set_game")
 
-    repo_get_game_mocked = mocker.patch("src.logic.main.repo.get_game")
+    repo_get_game_mocked = mocker.patch("src.logic.game.main.repo.get_game")
     repo_get_game_mocked.configure_mock(
         return_value=GameRedisSchema(
             room_id=room_id,
@@ -58,16 +58,16 @@ async def test_create_game__enough_args(
     )
 
     repo_check_players_in_wait_list_mocked = mocker.patch(
-        "src.logic.main.repo.check_players_in_wait_list"
+        "src.logic.game.main.repo.check_players_in_wait_list"
     )
     repo_check_players_in_wait_list_mocked.configure_mock(return_value=player1_fixture)
 
-    repo_get_game_players_mocked = mocker.patch("src.logic.main.repo.get_game_players")
+    repo_get_game_players_mocked = mocker.patch("src.logic.game.main.repo.get_game_players")
     repo_get_game_players_mocked.configure_mock(return_value=None)
 
-    mocker.patch("src.logic.main.repo.add_players_to_room")
+    mocker.patch("src.logic.game.main.repo.add_players_to_room")
 
-    mocker.patch("src.logic.game.Game._save_state")
+    mocker.patch("src.logic.game.game.Game._save_state")
 
     game = await create_game(
         player_id=player_id,
@@ -136,9 +136,9 @@ async def test_create_game__game_in_repo(
 ):
     room_id = uuid.uuid4()
 
-    mocker.patch("src.logic.main.repo.set_game")
+    mocker.patch("src.logic.game.main.repo.set_game")
 
-    repo_get_game_mocked = mocker.patch("src.logic.main.repo.get_game")
+    repo_get_game_mocked = mocker.patch("src.logic.game.main.repo.get_game")
     repo_get_game_mocked.configure_mock(
         return_value=GameRedisSchema(
             room_id=room_id,
@@ -160,27 +160,27 @@ async def test_create_game__game_not_in_repo(
     player1_fixture,
     player2_fixture,
 ):
-    repo_get_game_mocked = mocker.patch("src.logic.main.repo.get_game")
+    repo_get_game_mocked = mocker.patch("src.logic.game.main.repo.get_game")
     repo_get_game_mocked.configure_mock(return_value=None)
 
-    mocker.patch("src.logic.main.repo.set_game")
+    mocker.patch("src.logic.game.main.repo.set_game")
 
     repo_check_players_in_wait_list_mocked = mocker.patch(
-        "src.logic.main.repo.check_players_in_wait_list"
+        "src.logic.game.main.repo.check_players_in_wait_list"
     )
     repo_check_players_in_wait_list_mocked.configure_mock(return_value=player1_fixture)
 
-    repo_get_game_players_mocked = mocker.patch("src.logic.main.repo.get_game_players")
+    repo_get_game_players_mocked = mocker.patch("src.logic.game.main.repo.get_game_players")
     repo_get_game_players_mocked.configure_mock(return_value=None)
 
     repo_add_players_to_room_mocked = mocker.patch(
-        "src.logic.main.repo.add_players_to_room"
+        "src.logic.game.main.repo.add_players_to_room"
     )
     repo_remove_players_from_wait_list_mocked = mocker.patch(
-        "src.logic.main.repo.remove_players_from_wait_list"
+        "src.logic.game.main.repo.remove_players_from_wait_list"
     )
 
-    repo_set_game_players_mocked = mocker.patch("src.logic.main.repo.set_game_players")
+    repo_set_game_players_mocked = mocker.patch("src.logic.game.main.repo.set_game_players")
 
     game = await create_game(player_id=player2_fixture.id, rows_count=10)
 

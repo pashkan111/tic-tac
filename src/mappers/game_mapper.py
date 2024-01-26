@@ -1,5 +1,5 @@
-from src.logic.schemas import GameRedisSchema, Chips
-from src.logic.player import Player
+from src.logic.game.schemas import GameRedisSchema, Chips
+from src.logic.game.player import Player
 from typing import Any
 
 

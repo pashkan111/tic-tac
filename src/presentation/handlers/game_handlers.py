@@ -1,6 +1,6 @@
 from fastapi import APIRouter, exceptions
 from src.presentation.entities.game_entities import GameStartRequest, GameStartResponse
-from src.logic.main import create_game
+from src.logic.game.main import create_game
 from src.logic.auth.authentication import check_user
 from src.logic.exceptions import (
     NotEnoughArgsException,

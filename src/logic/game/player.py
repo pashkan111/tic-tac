@@ -1,4 +1,4 @@
-from .interfaces import PlayerAbstract
+from src.logic.interfaces import PlayerAbstract
 from dataclasses import dataclass
 from .schemas import Chips
 

@@ -1,11 +1,11 @@
-from .interfaces import GameAbstract
+from src.logic.interfaces import GameAbstract
 from .schemas import Chips, CheckResult
 from collections.abc import Iterator
 from .board import BoardArray
 from .player import Player
 from .checker import CheckerArray
 from src.repo.repository_game import RepositoryGame
-from .exceptions import PlayersNotEnoughException, GameNotStartedException
+from src.logic.exceptions import PlayersNotEnoughException, GameNotStartedException
 import uuid
 import itertools
 from .schemas import GameRedisSchema

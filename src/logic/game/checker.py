@@ -1,4 +1,4 @@
-from .interfaces import CheckerAbstract
+from src.logic.interfaces import CheckerAbstract
 from .schemas import Chips, CheckResult
 from .board import BoardArray
 from collections import defaultdict

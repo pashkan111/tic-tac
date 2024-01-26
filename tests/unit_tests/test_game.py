@@ -1,6 +1,5 @@
 from src.logic.interfaces import Chips
-from src.logic.game import Game
-from src.logic.schemas import GameRedisSchema
+from src.logic.game.game import Game
 from src.logic.exceptions import PlayersNotEnoughException, GameNotStartedException
 import pytest
 import uuid
@@ -137,7 +136,7 @@ async def test_game__set_state__check_call_count(
     mocker,
 ):
     repo_mocked = mocker.patch("src.repo.repository_game.repo")
-    save_state_mocked = mocker.patch("src.logic.game.Game._save_state")
+    save_state_mocked = mocker.patch("src.logic.game.game.Game._save_state")
     repo_mocked.configure_mock(**{"set_game": AsyncMock(asyncio.Future())})
 
     game = Game(
