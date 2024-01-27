@@ -36,8 +36,8 @@ async def test_make_move__game_not_started(
         checker=checker_fixture,
     )
     with pytest.raises(GameNotStartedException) as exc:
-        await game.make_move(2, 3)
-        assert str(game.room_id) in exc
+        await game.make_move(row=2, col=3)
+        assert str(game.room_id) in str(exc)
 
 
 @pytest.mark.asyncio

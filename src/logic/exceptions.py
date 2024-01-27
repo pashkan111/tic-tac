@@ -47,3 +47,14 @@ class PartnerDoesNotExistsException(AbstractException):
         "Game has not been created. There is no partner "
         "for this player. Room id: {room_id}"
     )
+
+
+class BadParamsException(AbstractException):
+    message = "Bad Params. Params: {params}"
+
+    def __init__(self, **params):
+        params_to_message = ""
+        for k, v in params.items():
+            params_to_message += f"{k}={str(v)}; "
+        self.message = self.message.format(params=params_to_message).strip()
+        super().__init__(self.message)

@@ -50,13 +50,15 @@ class RepositoryGame(RepositoryGameAbstract):
             keys=[str(rows_count)],
         )
 
-    async def add_players_to_room(self, player_ids: list[int], room_id: UUID) -> None:
+    async def add_players_to_room(
+        self, *, player_ids: list[int], room_id: UUID
+    ) -> None:
         await self.redis_client.get().add_to_set(
             name=f"{settings.REDIS_PLAYERS_BY_ROOMS}:{str(room_id)}",
             values=list(map(str, player_ids)),
         )
 
-    async def remove_player_from_room(self, player_id: int, room_id: UUID) -> None:
+    async def remove_player_from_room(self, *, player_id: int, room_id: UUID) -> None:
         await self.redis_client.get().remove_from_set(
             name=f"{settings.REDIS_PLAYERS_BY_ROOMS}:{str(room_id)}",
             values=[str(player_id)],

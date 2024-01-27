@@ -80,7 +80,7 @@ class Game(GameAbstract):
 
         await self._save_state()
 
-    async def make_move(self, row: int, col: int) -> CheckResult:
+    async def make_move(self, *, row: int, col: int) -> CheckResult:
         if self._started is False:
             raise GameNotStartedException(room_id=self.room_id)
 

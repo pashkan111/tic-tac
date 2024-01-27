@@ -4,15 +4,13 @@ from .board import BoardArray
 from .player import Player
 from src.repo.repository_game import repo
 import uuid
-from ..exceptions import (
+from src.logic.exceptions import (
     NotEnoughArgsException,
     RoomNotFoundInRepoException,
     PlayersNotEnoughException,
     AbstractException,
 )
 from .schemas import GameRedisSchema
-
-# TODO game must be found by player id
 
 
 def _make_game(game_data: GameRedisSchema) -> Game:
@@ -50,20 +48,12 @@ def _make_game(game_data: GameRedisSchema) -> Game:
 """
 
 
-async def _create_game_by_room_id(room_id: uuid.UUID) -> Game | None:
-    game_data = await repo.get_game(room_id)
-    if game_data:
-        game = _make_game(game_data)
-        await game.start()
-        return game
-
-
 async def create_game(
     *,
     player_id: int | None = None,
     rows_count: int | None = None,
     room_id: uuid.UUID | None = None
-) -> Game | None:
+) -> Game:
     if player_id and rows_count:
         # Check if player has active games
         existing_game_id = await repo.get_game_players(player_id)
@@ -101,17 +91,15 @@ async def create_game(
             room_id=room_id, rows_count=rows_count, player_id=player_id
         )
 
-    game_data = None
-    if room_id:
-        game_data = await repo.get_game(room_id)
+    await repo.check_players_in_wait_list(4)
+    game_data = await repo.get_game(room_id)
 
     if not game_data and not (rows_count and player_id):
         raise RoomNotFoundInRepoException(room_id=room_id)
 
-    if game_data:
-        game = _make_game(game_data)
-        await game.start()
-        return game
+    game = _make_game(game_data)
+    await game.start()
+    return game
 
 
 async def main(

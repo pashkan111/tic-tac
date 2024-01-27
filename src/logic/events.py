@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import StrEnum
-import uuid
+from src.logic.game.schemas import PlayerId
+from src.logic.auth.schemas import Token
 
 
 class ClientEventType(StrEnum):
@@ -8,15 +9,21 @@ class ClientEventType(StrEnum):
     MOVE = "MOVE"
 
 
-@dataclass
+# @dataclass(frozen=True, slots=True)
+# class BaseEvent:
+#     """Базовое событие для передачи по вебсокетам"""
+
+#     event_type: ClientEventType
+
+
+@dataclass(frozen=True, slots=True)
 class MoveEvent:
-    room_id: uuid.UUID
-    player_id: int
     row: int
     col: int
+    event_type: ClientEventType = ClientEventType.MOVE
 
 
-@dataclass
-class GameStartEvent:
-    player_id: int
-    rows_count: int
+@dataclass(frozen=True, slots=True)
+class StartGameEvent:
+    token: Token
+    event_type: ClientEventType = ClientEventType.START
