@@ -8,6 +8,7 @@ from src.logic.events import ClientEventType
 from src.presentation.entities.ws_game_entities import GameStartResponse, Status
 from src.logic.exceptions import RoomNotFoundInRepoException, BadParamsException
 
+
 ws_game_router = APIRouter(prefix="/game_ws")
 
 

@@ -1,31 +1,22 @@
 from python_tools.pytest_tools.conftest import *
-import websockets
 import httpx
+from async_asgi_testclient import TestClient as AsyncTestClient
 
-
-# @pytest_asyncio.fixture
-# async def test_client():
-#     from main import app
-
-#     async with httpx.AsyncClient(app=app, base_url="http://localhost:8000") as client:
-#         yield client
 
 @pytest_asyncio.fixture
 async def test_client():
     from main import app
-    from fastapi.testclient import TestClient
 
-    client = TestClient(app, base_url="http://localhost:8000")
-    return client
+    async with httpx.AsyncClient(app=app, base_url="http://localhost:8000") as client:
+        yield client
 
 
 @pytest_asyncio.fixture
 async def websocket_client():
     from main import app
-    from fastapi.testclient import TestClient
 
-    client = TestClient(app, base_url="ws://localhost:8000")
-    return client
+    async with AsyncTestClient(app) as client:
+        yield client
 
 
 DEFAULT_VARS = EnvVariables(
