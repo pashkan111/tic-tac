@@ -43,10 +43,7 @@ class RoomNotFoundInRepoException(AbstractException):
 
 
 class PartnerDoesNotExistsException(AbstractException):
-    message = (
-        "Game has not been created. There is no partner "
-        "for this player. Room id: {room_id}"
-    )
+    message = "Game has not been created. There is no partner " "for this player. Room id: {room_id}"
 
 
 class BadParamsException(AbstractException):

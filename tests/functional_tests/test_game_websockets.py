@@ -6,9 +6,7 @@ import orjson
 @pytest.mark.asyncio
 async def test_game_ws_handler__bad_message(websocket_client, pg):
     room_id = uuid.uuid4()
-    async with websocket_client.websocket_connect(
-        f"/game_ws/{str(room_id)}"
-    ) as websocket:
+    async with websocket_client.websocket_connect(f"/game_ws/{str(room_id)}") as websocket:
         await websocket.send_text('{"message": "Hello, WebSocket!"}')
         response = await websocket.receive_json()
         assert response == {
@@ -35,11 +33,7 @@ async def test_game_ws_handler__connected(pg, websocket_client, player_1, redis)
             }
         ),
     )
-    async with websocket_client.websocket_connect(
-        f"/game_ws/{str(room_id)}"
-    ) as websocket:
-        await websocket.send_text(
-            orjson.dumps({"event_type": "START", "token": player_1.token})
-        )
+    async with websocket_client.websocket_connect(f"/game_ws/{str(room_id)}") as websocket:
+        await websocket.send_text(orjson.dumps({"event_type": "START", "token": player_1.token}))
         response = await websocket.receive_json()
         assert response == {"status": "CONNECTED", "message": None}

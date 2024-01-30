@@ -48,9 +48,7 @@ class Game(GameAbstract):
         self.current_move_player = current_move_player
 
     def _set_player_iterator(self, current_move_player: Player) -> None:
-        players = sorted(
-            self.players, key=lambda player: player.id == current_move_player.id
-        )
+        players = sorted(self.players, key=lambda player: player.id == current_move_player.id)
         players_iterator = itertools.repeat(players)
         self._player_iterator = itertools.chain.from_iterable(players_iterator)
 
@@ -101,18 +99,12 @@ class Game(GameAbstract):
         await asyncio.gather(
             *[
                 self.repo.set_game(game_data),
-                self.repo.set_game_players(
-                    player_id=self.players[0].id, room_id=self.room_id
-                ),
-                self.repo.set_game_players(
-                    player_id=self.players[1].id, room_id=self.room_id
-                ),
+                self.repo.set_game_players(player_id=self.players[0].id, room_id=self.room_id),
+                self.repo.set_game_players(player_id=self.players[1].id, room_id=self.room_id),
                 self.repo.add_players_to_room(
                     player_ids=[self.players[0].id, self.players[1].id],
                     room_id=self.room_id,
                 ),
-                self.repo.remove_players_from_wait_list(
-                    rows_count=self.board.rows_count
-                ),
+                self.repo.remove_players_from_wait_list(rows_count=self.board.rows_count),
             ]
         )

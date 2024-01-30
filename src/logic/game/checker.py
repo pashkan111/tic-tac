@@ -6,11 +6,7 @@ from collections import defaultdict
 
 class CheckerArray(CheckerAbstract):
     def check_win(self, board: BoardArray) -> CheckResult:
-        winner = (
-            self._check_diagonal(board)
-            or self._check_gorizontal(board)
-            or self._check_vertical(board)
-        )
+        winner = self._check_diagonal(board) or self._check_gorizontal(board) or self._check_vertical(board)
         if winner:
             return CheckResult(is_winner=True, chip=winner)
         return CheckResult(is_winner=False)

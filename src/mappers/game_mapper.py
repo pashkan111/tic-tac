@@ -15,8 +15,5 @@ def map_game_data_from_redis(data: dict[str, Any]):
             player_id=data["current_move_player"]["id"],
             chip=Chips(data["current_move_player"]["chip"]),
         ),
-        players=[
-            map_player(player_id=player["id"], chip=player["chip"])
-            for player in data["players"]
-        ],
+        players=[map_player(player_id=player["id"], chip=player["chip"]) for player in data["players"]],
     )

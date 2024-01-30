@@ -11,15 +11,11 @@ class PlayerConnectionManager:
         self.repo = repo
         self.active_connections: dict[PlayerId, WebSocket] = {}
 
-    async def connect(
-        self, *, websocket: WebSocket, player_id: PlayerId, room_id: UUID
-    ):
+    async def connect(self, *, websocket: WebSocket, player_id: PlayerId, room_id: UUID):
         if player_id in self.active_connections:
             return
         self.active_connections[player_id] = websocket
-        await self.repo.add_players_to_room(
-            room_id=room_id, player_ids=[int(player_id)]
-        )
+        await self.repo.add_players_to_room(room_id=room_id, player_ids=[int(player_id)])
 
     async def disconnect(self, *, player_id: PlayerId, room_id: UUID):
         del self.active_connections[player_id]

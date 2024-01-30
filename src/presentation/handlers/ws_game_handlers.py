@@ -19,33 +19,25 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
     try:
         event_data = map_event_from_client(data)
     except BadParamsException as e:
-        await websocket.send_text(
-            GameStartResponse(status=Status.ERROR, message=e.message).model_dump_json()
-        )
+        await websocket.send_text(GameStartResponse(status=Status.ERROR, message=e.message).model_dump_json())
         return
 
     if not event_data.event_type == ClientEventType.START:
         await websocket.send_text(
-            GameStartResponse(
-                status=Status.ERROR, message="Wrong event type"
-            ).model_dump_json()
+            GameStartResponse(status=Status.ERROR, message="Wrong event type").model_dump_json()
         )
         return
 
     try:
         game = await create_game(room_id=room_id)
     except RoomNotFoundInRepoException as e:
-        await websocket.send_text(
-            GameStartResponse(status=Status.ERROR, message=e.message).model_dump_json()
-        )
+        await websocket.send_text(GameStartResponse(status=Status.ERROR, message=e.message).model_dump_json())
         return
 
     # await connection_manager.connect(
     #     websocket=websocket, player_id=event_data.player_id, room_id=room_id
     # )
-    await websocket.send_text(
-        GameStartResponse(status=Status.CONNECTED, message=None).model_dump_json()
-    )
+    await websocket.send_text(GameStartResponse(status=Status.CONNECTED, message=None).model_dump_json())
 
     try:
         while True:

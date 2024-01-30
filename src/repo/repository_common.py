@@ -23,9 +23,7 @@ class RepositoryCommon:
         """
         user = await self.pg.get().fetchrow(query, username)
         if user:
-            return UserData(
-                user_id=user["id"], username=user["username"], password=user["password"]
-            )
+            return UserData(user_id=user["id"], username=user["username"], password=user["password"])
         return None
 
     async def get_user_by_id(self, id: int) -> UserData | None:
@@ -35,9 +33,7 @@ class RepositoryCommon:
         """
         user = await self.pg.get().fetchrow(query, id)
         if user:
-            return UserData(
-                user_id=user["id"], username=user["username"], password=user["password"]
-            )
+            return UserData(user_id=user["id"], username=user["username"], password=user["password"])
         return None
 
 

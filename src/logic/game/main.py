@@ -49,10 +49,7 @@ def _make_game(game_data: GameRedisSchema) -> Game:
 
 
 async def create_game(
-    *,
-    player_id: int | None = None,
-    rows_count: int | None = None,
-    room_id: uuid.UUID | None = None
+    *, player_id: int | None = None, rows_count: int | None = None, room_id: uuid.UUID | None = None
 ) -> Game:
     if player_id and rows_count:
         # Check if player has active games
@@ -71,9 +68,7 @@ async def create_game(
         partner = await repo.check_players_in_wait_list(rows_count)
         new_player = Player(id=player_id, chip=None)
         if not partner:
-            await repo.set_players_to_wait_list(
-                player=new_player, rows_count=rows_count
-            )
+            await repo.set_players_to_wait_list(player=new_player, rows_count=rows_count)
             raise PlayersNotEnoughException(room_id=room_id)
 
         board = BoardArray(rows_count=rows_count)
@@ -87,9 +82,7 @@ async def create_game(
         return new_game
 
     if not room_id:
-        raise NotEnoughArgsException(
-            room_id=room_id, rows_count=rows_count, player_id=player_id
-        )
+        raise NotEnoughArgsException(room_id=room_id, rows_count=rows_count, player_id=player_id)
 
     await repo.check_players_in_wait_list(4)
     game_data = await repo.get_game(room_id)
@@ -103,14 +96,9 @@ async def create_game(
 
 
 async def main(
-    *,
-    player_id: int | None = None,
-    rows_count: int | None = None,
-    room_id: uuid.UUID | None = None
+    *, player_id: int | None = None, rows_count: int | None = None, room_id: uuid.UUID | None = None
 ) -> Game | None:
-    game = await create_game(
-        player_id=player_id, rows_count=rows_count, room_id=room_id
-    )
+    game = await create_game(player_id=player_id, rows_count=rows_count, room_id=room_id)
     return game
 
 

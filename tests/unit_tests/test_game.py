@@ -9,9 +9,7 @@ from unittest.mock import AsyncMock
 
 
 @pytest.mark.asyncio
-async def test_game_created(
-    player1_fixture, player2_fixture, board_fixture, repo_fixture, checker_fixture
-):
+async def test_game_created(player1_fixture, player2_fixture, board_fixture, repo_fixture, checker_fixture):
     game = Game(
         repo=repo_fixture,
         board=board_fixture,

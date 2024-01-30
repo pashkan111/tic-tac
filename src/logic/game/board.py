@@ -21,9 +21,7 @@ class BoardArray(BoardAbstract):
 
     def _create_board(self, rows_count: int) -> None:
         if rows_count > settings.MAX_ROWS or rows_count < settings.MIN_ROWS:
-            raise RowsNumberException(
-                max_rows=settings.MAX_ROWS, min_rows=settings.MIN_ROWS
-            )
+            raise RowsNumberException(max_rows=settings.MAX_ROWS, min_rows=settings.MIN_ROWS)
 
         board = [[0 for _ in range(rows_count)] for _ in range(rows_count)]
         self.board = board

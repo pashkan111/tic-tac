@@ -7,22 +7,16 @@ import uuid
 async def test_create_game_handler__wrong_token(pg, test_client, redis):
     await redis.hset(name="players_waiting_list", key="5", value="3")
 
-    response = await test_client.post(
-        "/game/create", json={"rows_count": "5", "token": "token"}
-    )
+    response = await test_client.post("/game/create", json={"rows_count": "5", "token": "token"})
 
     assert response.status_code == 401
 
 
 @pytest.mark.asyncio
-async def test_create_game_handler__partner_in_waiting_list(
-    pg, test_client, redis, player_1, mocker
-):
+async def test_create_game_handler__partner_in_waiting_list(pg, test_client, redis, player_1, mocker):
     await redis.hset(name="players_waiting_list", key="5", value="3")
 
-    response = await test_client.post(
-        "/game/create", json={"rows_count": "5", "token": player_1.token}
-    )
+    response = await test_client.post("/game/create", json={"rows_count": "5", "token": player_1.token})
 
     response = response.json()
     assert response["game_started"] == True
@@ -49,12 +43,8 @@ async def test_create_game_handler__partner_in_waiting_list(
 
 
 @pytest.mark.asyncio
-async def test_create_game_handler__partner_not_in_waiting_list(
-    pg, test_client, redis, player_1
-):
-    response = await test_client.post(
-        "/game/create", json={"rows_count": "5", "token": player_1.token}
-    )
+async def test_create_game_handler__partner_not_in_waiting_list(pg, test_client, redis, player_1):
+    response = await test_client.post("/game/create", json={"rows_count": "5", "token": player_1.token})
     response = response.json()
 
     assert await redis.hget(name="players_waiting_list", key="5") == "1"
@@ -62,9 +52,7 @@ async def test_create_game_handler__partner_not_in_waiting_list(
 
 
 @pytest.mark.asyncio
-async def test_create_game_handler__thereis_a_game_with_such_player(
-    pg, test_client, redis, player_1
-):
+async def test_create_game_handler__thereis_a_game_with_such_player(pg, test_client, redis, player_1):
     room_id = uuid.uuid4()
 
     await redis.hset(name="active_players", key=str(player_1.id), value=str(room_id))
@@ -84,9 +72,7 @@ async def test_create_game_handler__thereis_a_game_with_such_player(
         ),
     )
 
-    response = await test_client.post(
-        "/game/create", json={"rows_count": "5", "token": player_1.token}
-    )
+    response = await test_client.post("/game/create", json={"rows_count": "5", "token": player_1.token})
 
     response = response.json()
     assert response["game_started"] == True
