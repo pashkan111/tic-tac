@@ -60,3 +60,94 @@ async def test_game_ws_handler__connected(pg, websocket_client, player_1, redis)
 
     # Once clients disconnects from the server, player id is removed from redis
     assert await redis.get_set_values(name=f"players_by_rooms:{str(room_id)}") == {str(first_player_id)}
+
+
+@pytest.mark.asyncio
+async def test_game_ws_handler__make_moves__move_done(pg, websocket_client, player_1, player_2, redis):
+    room_id = uuid.uuid4()
+    board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+    ]
+    await redis.set(
+        key=str(room_id),
+        value=orjson.dumps(
+            {
+                "room_id": str(room_id),
+                "players": [{"id": player_1.id, "chip": 1}, {"id": player_2.id, "chip": 2}],
+                "current_move_player": {"id": player_1.id, "chip": 1},
+                "board": board,
+            }
+        ),
+    )
+    async with websocket_client.websocket_connect(f"/game_ws/{str(room_id)}") as websocket:
+        await websocket.send_text(orjson.dumps({"event_type": "START", "token": player_1.token}))
+        _ = await websocket.receive_json()
+        await websocket.send_text(orjson.dumps({"event_type": "MOVE", "row": 1, "col": 1}))
+        move_response = await websocket.receive_json()
+        assert move_response == {
+            "status": "SUCCESS",
+            "message": None,
+            "data": {
+                "board": [
+                    [player_1.id, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                ],
+                "current_move_player_id": player_2.id,
+                "winner": None,
+            },
+        }
+
+
+@pytest.mark.asyncio
+async def test_game_ws_handler__make_moves__error(pg, websocket_client, player_1, player_2, redis):
+    room_id = uuid.uuid4()
+    board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+    ]
+    await redis.set(
+        key=str(room_id),
+        value=orjson.dumps(
+            {
+                "room_id": str(room_id),
+                "players": [{"id": player_1.id, "chip": 1}, {"id": player_2.id, "chip": 2}],
+                "current_move_player": {"id": player_1.id, "chip": 1},
+                "board": board,
+            }
+        ),
+    )
+    async with websocket_client.websocket_connect(f"/game_ws/{str(room_id)}") as websocket:
+        await websocket.send_text(orjson.dumps({"event_type": "START", "token": player_1.token}))
+        _ = await websocket.receive_json()
+        await websocket.send_text(orjson.dumps({"event_type": "MOVE", "row": 0, "col": 1}))
+        move_response = await websocket.receive_json()
+        assert move_response == {
+            "status": "ERROR",
+            "message": "Error making move. Row=0, col=1",
+            "data": None,
+        }
+
+        await websocket.send_text(orjson.dumps({"event_type": "MOVE", "row": 1, "col": 1}))
+        
+        move_response = await websocket.receive_json()
+        assert move_response == {
+            "status": "SUCCESS",
+            "message": None,
+            "data": {
+                "board": [
+                    [player_1.id, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                    [0, 0, 0, 0],
+                ],
+                "current_move_player_id": player_2.id,
+                "winner": None,
+            },
+        }

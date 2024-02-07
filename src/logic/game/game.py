@@ -84,6 +84,7 @@ class Game(GameAbstract):
 
         self.board.make_move(player=self.current_move_player, row=row, col=col)
         check_result = self.checker.check_win(self.board)
+        # TODO finish game if is_winner is True
         self._switch_player()
         await self._save_state()
         return check_result

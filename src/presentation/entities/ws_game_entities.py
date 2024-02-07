@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from typing import Any
-from src.logic.events import StartGameResponseEvent
+from src.logic.events import MoveCreatedResponseEvent
 from enum import StrEnum
 
 
 class Status(StrEnum):
     CONNECTED = "CONNECTED"
-    DISCONNECTED = "DISCONNECTED"
     SUCCESS = "SUCCESS"
+    FINISHED = "FINISHED"
     ERROR = "ERROR"
 
 
@@ -22,9 +22,6 @@ class BaseResponse:
 class GameStartResponse(BaseResponse): ...
 
 
-#     data:
-
-
 @dataclass(slots=True)
-class ClientConnectedResponse(BaseResponse):
-    data: StartGameResponseEvent
+class ClientResponse(BaseResponse):
+    data: MoveCreatedResponseEvent

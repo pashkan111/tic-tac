@@ -12,7 +12,7 @@ class ChipDoesNotExistsException(AbstractException):
 
 
 class MakeMoveException(AbstractException):
-    message = "it is not possible to make move. Row={row}, col={col}"
+    message = "Error making move. Row={row}, col={col}"
 
 
 class RowsNumberException(AbstractException):

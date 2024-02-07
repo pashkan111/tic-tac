@@ -6,10 +6,10 @@ from src.mappers.event_mappers import map_event_from_client
 from src.mappers.response_mappers import map_response
 from src.logic.game.main import create_game
 from src.logic.events import ClientEventType
-from src.presentation.entities.ws_game_entities import GameStartResponse, Status
+from src.presentation.entities.ws_game_entities import GameStartResponse, Status, ClientResponse
 from src.logic.exceptions import RoomNotFoundInRepoException, BadParamsException
 from src.logic.auth.authentication import check_user
-from src.logic.events import StartGameResponseEvent
+from src.logic.events import StartGameResponseEvent, MoveCreatedResponseEvent
 
 ws_game_router = APIRouter(prefix="/game_ws")
 
@@ -65,8 +65,48 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
         while True:
             data = await websocket.receive_text()
             event_data = map_event_from_client(data)
-            if event_data.event_type == ClientEventType.MOVE:
-                await game.make_move(col=event_data.col, row=event_data.row)
+            if event_data.event_type != ClientEventType.MOVE:
+                await websocket.send_bytes(
+                    map_response(GameStartResponse(status=Status.ERROR, message="Wrong event type", data=None))
+                )
+                continue
+            try:
+                move_result = await game.make_move(col=event_data.col, row=event_data.row)
+            except Exception as e:
+                await websocket.send_bytes(
+                    map_response(GameStartResponse(status=Status.ERROR, message=e.message, data=None))
+                )
+                continue
+
+            if move_result.is_winner is True:
+                await websocket.send_bytes(
+                    map_response(
+                        ClientResponse(
+                            status=Status.FINISHED,
+                            message=None,
+                            data=MoveCreatedResponseEvent(
+                                board=game.board.board,
+                                current_move_player_id=None,
+                                winner=move_result.chip.value,
+                            ),
+                        )
+                    )
+                )
+                return
+
+            await websocket.send_bytes(
+                map_response(
+                    ClientResponse(
+                        status=Status.SUCCESS,
+                        message=None,
+                        data=MoveCreatedResponseEvent(
+                            board=game.board.board,
+                            current_move_player_id=game.current_move_player.id,
+                            winner=None,
+                        ),
+                    )
+                )
+            )
 
     except Exception as e:
         print(e)
