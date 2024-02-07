@@ -2,6 +2,7 @@ from settings import SECRET
 from .schemas import Token, UserId, UserLoginData
 from .utils import check_password, get_password_hash, create_token, check_token
 from src.repo.repository_common import repo
+from src.logic.exceptions import UserNotFoundException, UserInvalidCredsException
 
 
 async def register_user(*, username: str, password: str) -> UserId:
@@ -13,7 +14,7 @@ async def register_user(*, username: str, password: str) -> UserId:
 async def login_user(*, username: str, password: str) -> UserLoginData:
     user = await repo.get_user_by_username(username)
     if not (user and check_password(hash=user.password, password=password)):
-        raise Exception
+        raise UserInvalidCredsException(username=username)
     token = create_token(user_id=user.user_id, secret=SECRET)
     return UserLoginData(user_id=user.user_id, token=token)
 
@@ -23,4 +24,4 @@ async def check_user(token: Token) -> UserId:
     user = await repo.get_user_by_id(user_id)
     if user:
         return user.user_id
-    raise Exception
+    raise UserNotFoundException(user_id=user_id)

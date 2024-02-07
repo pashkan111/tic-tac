@@ -108,3 +108,5 @@ class Game(GameAbstract):
                 self.repo.remove_players_from_wait_list(rows_count=self.board.rows_count),
             ]
         )
+
+    async def finish(self): ...

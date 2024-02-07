@@ -54,6 +54,13 @@ class RepositoryGame(RepositoryGameAbstract):
             values=list(map(str, player_ids)),
         )
 
+    async def get_players_from_room(self, room_id: UUID) -> list[int]:
+        """Хранит игроков, привязанных к определенной комнате"""
+        player_ids = await self.redis_client.get().get_set_values(
+            name=f"{settings.REDIS_PLAYERS_BY_ROOMS}:{str(room_id)}",
+        )
+        return [int(player_id) for player_id in player_ids]
+
     async def remove_player_from_room(self, *, player_id: int, room_id: UUID) -> None:
         await self.redis_client.get().remove_from_set(
             name=f"{settings.REDIS_PLAYERS_BY_ROOMS}:{str(room_id)}",
@@ -68,6 +75,7 @@ class RepositoryGame(RepositoryGameAbstract):
         )
 
     async def get_game_players(self, player_id: int) -> UUID | None:
+        """Проверяет, есть ли у пользователя незаконченная игра"""
         room_id = await self.redis_client.get().hget(name=settings.REDIS_ACTIVE_PLAYERS, key=str(player_id))
         return room_id
 

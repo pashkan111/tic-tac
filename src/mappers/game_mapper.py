@@ -7,7 +7,7 @@ def map_player(*, player_id: int, chip: Chips | None = None) -> Player:
     return Player(player_id, chip)
 
 
-def map_game_data_from_redis(data: dict[str, Any]):
+def map_game_data_from_redis(data: dict[str, Any]) -> GameRedisSchema:
     return GameRedisSchema(
         room_id=data["room_id"],
         board=data["board"],

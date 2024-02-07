@@ -1,7 +1,7 @@
 import jwt
 from dataclasses import asdict
 from .schemas import PayloadData, Token, UserId
-
+from src.logic.exceptions import InvalidTokenException
 from passlib.context import CryptContext
 
 
@@ -20,8 +20,8 @@ def check_token(*, token: str, secret: str) -> UserId:
     try:
         decoded = jwt.decode(token, secret, algorithms=["HS256"])
         payload = PayloadData(**decoded)
-    except jwt.InvalidSignatureError:
-        raise Exception("Invalid token")
+    except (jwt.InvalidSignatureError, jwt.exceptions.DecodeError):
+        raise InvalidTokenException(token=token)
     return payload.user_id
 
 

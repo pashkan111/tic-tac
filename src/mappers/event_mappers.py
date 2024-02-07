@@ -15,5 +15,5 @@ def map_event_from_client(data: str) -> StartGameEvent | MoveEvent:
         event_type = data_loaded["event_type"]
         event_mapper = EVENTS_MAPPERS[event_type]
         return event_mapper(**data_loaded)
-    except Exception as e:
+    except Exception:
         raise BadParamsException(**data_loaded)

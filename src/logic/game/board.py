@@ -1,10 +1,8 @@
 from src.logic.interfaces import BoardAbstract
 from .player import Player
 import settings
-from typing import TypeAlias
 from src.logic.exceptions import MakeMoveException, RowsNumberException
-
-Board: TypeAlias = list[list[int]]
+from .schemas import Board
 
 
 class BoardArray(BoardAbstract):

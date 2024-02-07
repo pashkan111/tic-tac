@@ -43,7 +43,7 @@ class RoomNotFoundInRepoException(AbstractException):
 
 
 class PartnerDoesNotExistsException(AbstractException):
-    message = "Game has not been created. There is no partner " "for this player. Room id: {room_id}"
+    message = "Game has not been created. There is no partner for this player. Room id: {room_id}"
 
 
 class BadParamsException(AbstractException):
@@ -55,3 +55,15 @@ class BadParamsException(AbstractException):
             params_to_message += f"{k}={str(v)}; "
         self.message = self.message.format(params=params_to_message).strip()
         super().__init__(self.message)
+
+
+class InvalidTokenException(AbstractException):
+    message = "Invalid Token. Token: {token}"
+
+
+class UserNotFoundException(AbstractException):
+    message = "User Not Found. User id: {user_id}"
+
+
+class UserInvalidCredsException(AbstractException):
+    message = "Invalid Credentials. Username: {username}"

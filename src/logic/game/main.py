@@ -84,7 +84,6 @@ async def create_game(
     if not room_id:
         raise NotEnoughArgsException(room_id=room_id, rows_count=rows_count, player_id=player_id)
 
-    await repo.check_players_in_wait_list(4)
     game_data = await repo.get_game(room_id)
 
     if not game_data and not (rows_count and player_id):

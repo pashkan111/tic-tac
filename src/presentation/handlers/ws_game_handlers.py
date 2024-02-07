@@ -3,11 +3,13 @@ from fastapi.routing import APIRouter
 import uuid
 from src.logic.consumers.connection_manager import connection_manager
 from src.mappers.event_mappers import map_event_from_client
+from src.mappers.response_mappers import map_response
 from src.logic.game.main import create_game
 from src.logic.events import ClientEventType
 from src.presentation.entities.ws_game_entities import GameStartResponse, Status
 from src.logic.exceptions import RoomNotFoundInRepoException, BadParamsException
-
+from src.logic.auth.authentication import check_user
+from src.logic.events import StartGameResponseEvent
 
 ws_game_router = APIRouter(prefix="/game_ws")
 
@@ -17,27 +19,47 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
     await websocket.accept()
     data = await websocket.receive_text()
     try:
-        event_data = map_event_from_client(data)
+        request_data = map_event_from_client(data)
     except BadParamsException as e:
-        await websocket.send_text(GameStartResponse(status=Status.ERROR, message=e.message).model_dump_json())
+        await websocket.send_bytes(
+            map_response(GameStartResponse(status=Status.ERROR, message=e.message, data=None))
+        )
         return
 
-    if not event_data.event_type == ClientEventType.START:
-        await websocket.send_text(
-            GameStartResponse(status=Status.ERROR, message="Wrong event type").model_dump_json()
+    if not request_data.event_type == ClientEventType.START:
+        await websocket.send_bytes(
+            map_response(GameStartResponse(status=Status.ERROR, message="Wrong event type", data=None))
+        )
+        return
+
+    try:
+        player_id = await check_user(request_data.token)
+    except Exception as e:
+        await websocket.send_bytes(
+            map_response(GameStartResponse(status=Status.ERROR, message=e.message, data=None))
         )
         return
 
     try:
         game = await create_game(room_id=room_id)
     except RoomNotFoundInRepoException as e:
-        await websocket.send_text(GameStartResponse(status=Status.ERROR, message=e.message).model_dump_json())
+        await websocket.send_bytes(
+            map_response(GameStartResponse(status=Status.ERROR, message=e.message, data=None))
+        )
         return
 
-    # await connection_manager.connect(
-    #     websocket=websocket, player_id=event_data.player_id, room_id=room_id
-    # )
-    await websocket.send_text(GameStartResponse(status=Status.CONNECTED, message=None).model_dump_json())
+    await connection_manager.connect(websocket=websocket, player_id=player_id, room_id=room_id)
+    await websocket.send_bytes(
+        map_response(
+            GameStartResponse(
+                status=Status.CONNECTED,
+                message=None,
+                data=StartGameResponseEvent(
+                    board=game.board.board, current_move_player_id=game.current_move_player.id
+                ),
+            )
+        )
+    )
 
     try:
         while True:

@@ -8,10 +8,10 @@ from typing import TYPE_CHECKING, TypeAlias
 
 if TYPE_CHECKING:
     from .player import Player
-    from .board import Board
 
 
 PlayerId: TypeAlias = int
+Board: TypeAlias = list[list[int]]
 
 
 class MoveStatus(StrEnum):
