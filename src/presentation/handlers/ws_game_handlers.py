@@ -67,9 +67,12 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
             event_data = map_event_from_client(data)
             if event_data.event_type != ClientEventType.MOVE:
                 await websocket.send_bytes(
-                    map_response(GameStartResponse(status=Status.ERROR, message="Wrong event type", data=None))
+                    map_response(
+                        GameStartResponse(status=Status.ERROR, message="Wrong event type", data=None)
+                    )
                 )
                 continue
+
             try:
                 move_result = await game.make_move(col=event_data.col, row=event_data.row)
             except Exception as e:
@@ -87,7 +90,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                             data=MoveCreatedResponseEvent(
                                 board=game.board.board,
                                 current_move_player_id=None,
-                                winner=move_result.chip.value,
+                                winner=move_result.chip.value,  # TODO return user id
                             ),
                         )
                     )
@@ -111,4 +114,4 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
     except Exception as e:
         print(e)
     finally:
-        await connection_manager.disconnect(room_id=room_id, player_id=1)
+        await connection_manager.disconnect(room_id=room_id, player_id=player_id)

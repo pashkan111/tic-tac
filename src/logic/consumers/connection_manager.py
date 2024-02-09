@@ -5,6 +5,7 @@ from src.logic.game.schemas import PlayerId
 
 
 class PlayerConnectionManager:
+    active_connections: dict[PlayerId, WebSocket]
     repo: RepositoryGame
 
     def __init__(self, repo: RepositoryGame):
