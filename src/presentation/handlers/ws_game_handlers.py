@@ -5,11 +5,11 @@ from src.logic.consumers.connection_manager import connection_manager
 from src.mappers.event_mappers import map_event_from_client
 from src.mappers.response_mappers import map_response
 from src.logic.game.main import create_game
-from src.logic.events import ClientEventType
+from src.logic.events.events import ClientEventType
 from src.presentation.entities.ws_game_entities import GameStartResponse, Status, ClientResponse
 from src.logic.exceptions import RoomNotFoundInRepoException, BadParamsException
 from src.logic.auth.authentication import check_user
-from src.logic.events import StartGameResponseEvent, MoveCreatedResponseEvent
+from src.logic.events.responses import StartGameResponseEvent, MoveCreatedResponseEvent
 
 ws_game_router = APIRouter(prefix="/game_ws")
 
@@ -20,6 +20,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
     data = await websocket.receive_text()
     try:
         request_data = map_event_from_client(data)
+        print("-=" * 100, request_data)
     except BadParamsException as e:
         await websocket.send_bytes(
             map_response(GameStartResponse(status=Status.ERROR, message=e.message, data=None))

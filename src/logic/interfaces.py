@@ -2,7 +2,7 @@ import abc
 from typing import Any
 import uuid
 from .game.schemas import Chips
-from .events import MoveEvent
+from .events.events import MoveEvent
 
 
 class CheckerAbstract(abc.ABC):

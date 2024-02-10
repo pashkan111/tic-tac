@@ -1,4 +1,4 @@
-from src.logic.events import MoveEvent, StartGameEvent, ClientEventType
+from src.logic.events.events import MoveEvent, StartGameEvent, ClientEventType
 import orjson
 from src.logic.exceptions import BadParamsException
 

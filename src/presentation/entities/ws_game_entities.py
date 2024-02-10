@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
-from src.logic.events import MoveCreatedResponseEvent
+from src.logic.events.responses import MoveCreatedResponseEvent
 from enum import StrEnum
 
 
