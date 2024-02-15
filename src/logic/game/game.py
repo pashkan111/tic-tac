@@ -5,10 +5,10 @@ from .board import BoardArray
 from .player import Player
 from .checker import CheckerArray
 from src.repo.repository_game import RepositoryGame
-from src.logic.exceptions import PlayersNotEnoughException, GameNotStartedException
+from src.logic.exceptions import PlayersNotEnoughException, GameNotStartedException, MoveTurnException
 import uuid
 import itertools
-from .schemas import GameRedisSchema
+from .schemas import GameRedisSchema, PlayerId
 import asyncio
 
 
@@ -64,6 +64,10 @@ class Game(GameAbstract):
     def _check_players_count(self):
         return len(self.players) > 1
 
+    def _check_player_move(self, player_id: PlayerId):
+        if not player_id == self.current_move_player.id:
+            raise MoveTurnException(player_id=self.current_move_player.id)
+
     async def start(self):
         if not self._check_players_count():
             raise PlayersNotEnoughException(room_id=self.room_id)
@@ -78,10 +82,11 @@ class Game(GameAbstract):
 
         await self._save_state()
 
-    async def make_move(self, *, row: int, col: int) -> CheckResult:
+    async def make_move(self, *, player_id: PlayerId, row: int, col: int) -> CheckResult:
         if self._started is False:
             raise GameNotStartedException(room_id=self.room_id)
 
+        self._check_player_move(player_id)
         self.board.make_move(player=self.current_move_player, row=row, col=col)
         check_result = self.checker.check_win(self.board)
         self._switch_player()

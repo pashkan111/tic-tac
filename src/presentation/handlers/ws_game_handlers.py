@@ -19,21 +19,21 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
     await websocket.accept()
     data = await websocket.receive_text()
     try:
-        request_data = map_event_from_client(data)
+        request_event = map_event_from_client(data)
     except BadParamsException as e:
         await websocket.send_bytes(
             map_response(GameStartResponse(status=ResponseStatus.ERROR, message=e.message, data=None))
         )
         return
 
-    if not request_data.event_type == ClientEventType.START:
+    if not request_event.event_type == ClientEventType.START:
         await websocket.send_bytes(
             map_response(GameStartResponse(status=ResponseStatus.ERROR, message="Wrong event type", data=None))
         )
         return
 
     try:
-        player_id = await check_user(request_data.token)
+        player_id = await check_user(request_event.data.token)
     except AbstractException as e:
         await websocket.send_bytes(
             map_response(GameStartResponse(status=ResponseStatus.ERROR, message=e.message, data=None))
@@ -58,20 +58,22 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
             )
         )
     )
-    # await connection_manager.send_event_to_all_players()
+    await connection_manager.send_event_to_all_players(event=request_event, player_id=player_id, room_id=room_id)
 
     try:
         while True:
             data = await websocket.receive_text()
-            event_data = map_event_from_client(data)
-            if event_data.event_type != ClientEventType.MOVE:
+            request_event = map_event_from_client(data)
+            if request_event.event_type != ClientEventType.MOVE:
                 await websocket.send_bytes(
                     map_response(GameStartResponse(status=ResponseStatus.ERROR, message="Wrong event type", data=None))
                 )
                 continue
 
             try:
-                move_result = await game.make_move(col=event_data.col, row=event_data.row)
+                move_result = await game.make_move(
+                    col=request_event.data.col, row=request_event.data.row, player_id=player_id
+                )
             except Exception as e:
                 await websocket.send_bytes(
                     map_response(GameStartResponse(status=ResponseStatus.ERROR, message=e.message, data=None))
@@ -92,6 +94,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                         )
                     )
                 )
+
                 return
 
             await websocket.send_bytes(

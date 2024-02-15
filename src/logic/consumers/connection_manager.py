@@ -2,6 +2,7 @@ from fastapi.websockets import WebSocket
 from src.repo.repository_game import repo, RepositoryGame
 from uuid import UUID
 from src.logic.game.schemas import PlayerId
+from src.logic.events.events import BaseEvent
 
 
 class PlayerConnectionManager:
@@ -22,12 +23,15 @@ class PlayerConnectionManager:
         del self.active_connections[player_id]
         await self.repo.remove_player_from_room(room_id=room_id, player_id=player_id)
 
-    async def send_event_to_all_players(self, *, event, player_id: PlayerId, room_id: UUID):
+    async def send_event_to_all_players(self, *, event: BaseEvent, player_id: PlayerId, room_id: UUID):
         all_players = await self.repo.get_players_from_room(room_id)
         for player in all_players:
             if player == player_id:
                 continue
-            await self.active_connections[player].send_bytes(event)
+            # TODO add sending responses
+            websocket = self.active_connections.get(player)
+            if websocket:
+                await websocket.send_bytes(event.to_json().encode())
 
 
 connection_manager = PlayerConnectionManager(repo)

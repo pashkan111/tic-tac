@@ -5,6 +5,8 @@ from enum import StrEnum
 
 
 class ResponseStatus(StrEnum):
+    """Статусы ответов клиенту на события"""
+
     CONNECTED = "CONNECTED"
     DISCONNECTED = "DISCONNECTED"
     SUCCESS = "SUCCESS"

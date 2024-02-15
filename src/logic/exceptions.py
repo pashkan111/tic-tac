@@ -67,3 +67,7 @@ class UserNotFoundException(AbstractException):
 
 class UserInvalidCredsException(AbstractException):
     message = "Invalid Credentials. Username: {username}"
+
+
+class MoveTurnException(AbstractException):
+    message = "Others players turn to move. Player id: {player_id}"

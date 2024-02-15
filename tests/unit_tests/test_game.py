@@ -34,7 +34,7 @@ async def test_make_move__game_not_started(
         checker=checker_fixture,
     )
     with pytest.raises(GameNotStartedException) as exc:
-        await game.make_move(row=2, col=3)
+        await game.make_move(player_id=player1_fixture.id, row=2, col=3)
         assert str(game.room_id) in str(exc)
 
 
@@ -107,11 +107,11 @@ async def test_game_make_move__next_move_player_changes(
     with patch.object(game, "_save_state", return_value=None) as _:
         await game.start()
 
-        await game.make_move(row=1, col=1)
-        await game.make_move(row=2, col=1)
-        await game.make_move(row=1, col=2)
-        await game.make_move(row=2, col=2)
-        await game.make_move(row=3, col=3)
+        await game.make_move(row=1, col=1, player_id=player1_fixture.id)
+        await game.make_move(row=2, col=1, player_id=player2_fixture.id)
+        await game.make_move(row=1, col=2, player_id=player1_fixture.id)
+        await game.make_move(row=2, col=2, player_id=player2_fixture.id)
+        await game.make_move(row=3, col=3, player_id=player1_fixture.id)
 
     board = game.board.board
 
@@ -144,10 +144,10 @@ async def test_game__set_state__check_call_count(
 
     await game.start()
 
-    await game.make_move(row=1, col=1)
-    await game.make_move(row=2, col=1)
-    await game.make_move(row=1, col=2)
-    await game.make_move(row=2, col=2)
-    await game.make_move(row=3, col=3)
+    await game.make_move(row=1, col=1, player_id=player1_fixture.id)
+    await game.make_move(row=2, col=1, player_id=player2_fixture.id)
+    await game.make_move(row=1, col=2, player_id=player1_fixture.id)
+    await game.make_move(row=2, col=2, player_id=player2_fixture.id)
+    await game.make_move(row=3, col=3, player_id=player1_fixture.id)
 
     assert save_state_mocked.call_count == 6

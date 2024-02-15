@@ -3,6 +3,9 @@ from src.mappers.game_mapper import (
     Player,
     Chips,
 )
+from src.mappers.event_mappers import map_event_from_client
+from src.logic.events.events import MoveEventData, StartGameEventData, BaseEvent, ClientEventType
+import json
 
 
 def test_map_game_data_from_redis():
@@ -17,3 +20,11 @@ def test_map_game_data_from_redis():
     assert mapped.board == []
     assert mapped.room_id == 111
     assert mapped.current_move_player == Player(id=1, chip=Chips.O)
+
+
+def test_map_event_from_client():
+    data = {"event_type": "START", "data": {"token": "Token"}}
+
+    event = map_event_from_client(json.dumps(data))
+    assert event.event_type == "START"
+    assert isinstance(event.data, StartGameEventData)
