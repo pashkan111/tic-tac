@@ -4,8 +4,9 @@ from src.logic.events.responses import MoveCreatedResponseEvent
 from enum import StrEnum
 
 
-class Status(StrEnum):
+class ResponseStatus(StrEnum):
     CONNECTED = "CONNECTED"
+    DISCONNECTED = "DISCONNECTED"
     SUCCESS = "SUCCESS"
     FINISHED = "FINISHED"
     ERROR = "ERROR"
@@ -13,7 +14,7 @@ class Status(StrEnum):
 
 @dataclass(slots=True)
 class BaseResponse:
-    status: Status
+    status: ResponseStatus
     message: str | None
     data: Any | None
 

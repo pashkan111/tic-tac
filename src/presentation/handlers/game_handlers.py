@@ -25,7 +25,7 @@ async def create_game_handler(data: GameStartRequest):
         raise exceptions.HTTPException(status_code=400, detail=exc.message)
     except PlayersNotEnoughException:
         return GameStartResponse(game_started=False, room_id=None, partner_id=None)
-    except Exception as exc:
+    except Exception:
         return GameStartResponse(game_started=False, room_id=None, partner_id=None)
 
     return GameStartResponse(
