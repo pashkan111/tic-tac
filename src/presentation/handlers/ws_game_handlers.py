@@ -54,9 +54,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
             GameStartResponse(
                 status=ResponseStatus.CONNECTED,
                 message=None,
-                data=StartGameResponseEvent(
-                    board=game.board.board, current_move_player_id=game.current_move_player.id
-                ),
+                data=StartGameResponseEvent(board=game.board.board, current_move_player_id=game.current_move_player.id),
             )
         )
     )
@@ -68,9 +66,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
             event_data = map_event_from_client(data)
             if event_data.event_type != ClientEventType.MOVE:
                 await websocket.send_bytes(
-                    map_response(
-                        GameStartResponse(status=ResponseStatus.ERROR, message="Wrong event type", data=None)
-                    )
+                    map_response(GameStartResponse(status=ResponseStatus.ERROR, message="Wrong event type", data=None))
                 )
                 continue
 

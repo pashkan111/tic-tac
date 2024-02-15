@@ -20,7 +20,8 @@ class BaseResponse:
 
 
 @dataclass(slots=True)
-class GameStartResponse(BaseResponse): ...
+class GameStartResponse(BaseResponse):
+    ...
 
 
 @dataclass(slots=True)

@@ -7,16 +7,20 @@ from .events.events import MoveEvent
 
 class CheckerAbstract(abc.ABC):
     @abc.abstractmethod
-    def check_win(self) -> bool: ...
+    def check_win(self) -> bool:
+        ...
 
     @abc.abstractmethod
-    def _check_diagonal(self, board: "BoardAbstract") -> bool: ...
+    def _check_diagonal(self, board: "BoardAbstract") -> bool:
+        ...
 
     @abc.abstractmethod
-    def _check_gorizontal(self, board: "BoardAbstract") -> bool: ...
+    def _check_gorizontal(self, board: "BoardAbstract") -> bool:
+        ...
 
     @abc.abstractmethod
-    def _check_vertical(self, board: "BoardAbstract") -> bool: ...
+    def _check_vertical(self, board: "BoardAbstract") -> bool:
+        ...
 
 
 class PlayerAbstract(abc.ABC):
@@ -36,7 +40,8 @@ class BoardAbstract(abc.ABC):
         pass
 
 
-class RepositoryGameAbstract(abc.ABC): ...
+class RepositoryGameAbstract(abc.ABC):
+    ...
 
 
 class GameAbstract(abc.ABC):
@@ -48,7 +53,9 @@ class GameAbstract(abc.ABC):
     next_move: PlayerAbstract
 
     @abc.abstractmethod
-    async def start(self): ...
+    async def start(self):
+        ...
 
     @abc.abstractmethod
-    async def make_move(self, *, row: int, col: int) -> MoveEvent: ...
+    async def make_move(self, *, row: int, col: int) -> MoveEvent:
+        ...

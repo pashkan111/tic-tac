@@ -77,9 +77,7 @@ async def test_game_start__not_enough_players(
 
 
 @pytest.mark.asyncio
-async def test_game_player_switcher(
-    player1_fixture, player2_fixture, board_fixture, repo_fixture, checker_fixture
-):
+async def test_game_player_switcher(player1_fixture, player2_fixture, board_fixture, repo_fixture, checker_fixture):
     game = Game(
         repo=repo_fixture,
         board=board_fixture,

@@ -109,4 +109,5 @@ class Game(GameAbstract):
             ]
         )
 
-    async def finish(self): ...
+    async def finish(self):
+        ...
