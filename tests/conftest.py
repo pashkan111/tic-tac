@@ -19,6 +19,14 @@ async def websocket_client():
         yield client
 
 
+@pytest_asyncio.fixture
+async def websocket_client2():
+    from main import app
+
+    async with AsyncTestClient(app) as client:
+        yield client
+
+
 DEFAULT_VARS = EnvVariables(
     db_schema_path="src/repo/schema.sql",
     db_drop_schema_path="src/repo/drop_schema.sql",

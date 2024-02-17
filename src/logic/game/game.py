@@ -1,13 +1,11 @@
 from src.logic.interfaces import GameAbstract
 from .schemas import Chips, CheckResult
-from collections.abc import Iterator
 from .board import BoardArray
 from .player import Player
 from .checker import CheckerArray
 from src.repo.repository_game import RepositoryGame
 from src.logic.exceptions import PlayersNotEnoughException, GameNotStartedException, MoveTurnException
 import uuid
-import itertools
 from .schemas import GameRedisSchema, PlayerId
 import asyncio
 
@@ -20,7 +18,6 @@ class Game(GameAbstract):
         "board",
         "checker",
         "current_move_player",
-        "_player_iterator",
     )
     room_id: uuid.UUID
     players: list[Player]
@@ -28,7 +25,6 @@ class Game(GameAbstract):
     board: BoardArray
     checker: CheckerArray
     current_move_player: Player
-    _player_iterator: Iterator[Player]
     _started: bool = False
 
     def __init__(
@@ -47,14 +43,10 @@ class Game(GameAbstract):
         self.room_id = room_id or uuid.uuid4()
         self.current_move_player = current_move_player
 
-    def _set_player_iterator(self, current_move_player: Player) -> None:
-        players = sorted(self.players, key=lambda player: player.id == current_move_player.id)
-        players_iterator = itertools.repeat(players)
-        self._player_iterator = itertools.chain.from_iterable(players_iterator)
-
-    def _switch_player(self) -> Player:
-        self.current_move_player = next(self._player_iterator)
-        return self.current_move_player
+    def _switch_player(self) -> None:
+        self.current_move_player = list(filter(lambda player: player.id != self.current_move_player.id, self.players))[
+            0
+        ]
 
     def _set_chips_to_players(self) -> None:
         chips_iterator = iter(Chips)
@@ -77,12 +69,11 @@ class Game(GameAbstract):
         if self.current_move_player is None:
             self.current_move_player = self.players[0]
 
-        self._set_player_iterator(self.current_move_player)
         self._started = True
-
         await self._save_state()
 
     async def make_move(self, *, player_id: PlayerId, row: int, col: int) -> CheckResult:
+        await self._update_state()
         if self._started is False:
             raise GameNotStartedException(room_id=self.room_id)
 
@@ -93,6 +84,11 @@ class Game(GameAbstract):
         await self._save_state()
         return check_result
 
+    async def _update_state(self):
+        game_data = await self.repo.get_game(self.room_id)
+        self.current_move_player = game_data.current_move_player
+        self.board.board = game_data.board
+
     async def _save_state(self) -> None:
         game_data = GameRedisSchema(
             room_id=self.room_id,
@@ -100,7 +96,6 @@ class Game(GameAbstract):
             current_move_player=self.current_move_player,
             board=self.board.board,
         )
-
         await asyncio.gather(
             *[
                 self.repo.set_game(game_data),

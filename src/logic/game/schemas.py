@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from uuid import UUID
 from datetime import datetime
 from enum import StrEnum, Enum
 from src.logic.exceptions import ChipDoesNotExistsException
 from typing import TYPE_CHECKING, TypeAlias
+from uuid import UUID
 
 if TYPE_CHECKING:
     from .player import Player

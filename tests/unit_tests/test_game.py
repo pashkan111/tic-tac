@@ -4,7 +4,6 @@ from src.logic.exceptions import PlayersNotEnoughException, GameNotStartedExcept
 import pytest
 import uuid
 from unittest.mock import patch
-import asyncio
 from unittest.mock import AsyncMock
 
 
@@ -25,14 +24,16 @@ async def test_game_created(player1_fixture, player2_fixture, board_fixture, rep
 
 @pytest.mark.asyncio
 async def test_make_move__game_not_started(
-    player1_fixture, player2_fixture, board_fixture, repo_fixture, checker_fixture
+    player1_fixture, player2_fixture, board_fixture, repo_fixture, checker_fixture, mocker
 ):
+    repo_fixture.get_game.return_value = AsyncMock()
     game = Game(
         repo=repo_fixture,
         board=board_fixture,
         players=[player1_fixture, player2_fixture],
         checker=checker_fixture,
     )
+
     with pytest.raises(GameNotStartedException) as exc:
         await game.make_move(player_id=player1_fixture.id, row=2, col=3)
         assert str(game.room_id) in str(exc)
@@ -77,26 +78,34 @@ async def test_game_start__not_enough_players(
 
 
 @pytest.mark.asyncio
-async def test_game_player_switcher(player1_fixture, player2_fixture, board_fixture, repo_fixture, checker_fixture):
+async def test_game_player_switcher(
+    player1_fixture, player2_fixture, board_fixture, repo_fixture, checker_fixture, mocker
+):
+    repo_fixture.get_game.return_value = AsyncMock()
+    mocker.patch("src.logic.game.game.Game._save_state")
+    mocker.patch("src.logic.game.game.Game._update_state")
+
     game = Game(
         repo=repo_fixture,
         board=board_fixture,
         players=[player1_fixture, player2_fixture],
         checker=checker_fixture,
     )
-    with patch.object(game, "_save_state", return_value=None) as _:
-        await game.start()
 
-        assert game.current_move_player == player1_fixture
-        assert game._switch_player() == player2_fixture
-        assert game._switch_player() == player1_fixture
-        assert game._switch_player() == player2_fixture
+    await game.start()
+
+    assert game.current_move_player == player1_fixture
+    game._switch_player()
+    assert game.current_move_player == player2_fixture
+    game._switch_player()
+    assert game.current_move_player == player1_fixture
 
 
 @pytest.mark.asyncio
 async def test_game_make_move__next_move_player_changes(
-    player1_fixture, player2_fixture, board_fixture, repo_fixture, checker_fixture
+    player1_fixture, player2_fixture, board_fixture, repo_fixture, checker_fixture, mocker
 ):
+    repo_fixture.get_game.return_value = AsyncMock()
     game = Game(
         repo=repo_fixture,
         board=board_fixture,
@@ -104,14 +113,16 @@ async def test_game_make_move__next_move_player_changes(
         checker=checker_fixture,
     )
 
-    with patch.object(game, "_save_state", return_value=None) as _:
-        await game.start()
+    mocker.patch("src.logic.game.game.Game._save_state")
+    mocker.patch("src.logic.game.game.Game._update_state")
 
-        await game.make_move(row=1, col=1, player_id=player1_fixture.id)
-        await game.make_move(row=2, col=1, player_id=player2_fixture.id)
-        await game.make_move(row=1, col=2, player_id=player1_fixture.id)
-        await game.make_move(row=2, col=2, player_id=player2_fixture.id)
-        await game.make_move(row=3, col=3, player_id=player1_fixture.id)
+    await game.start()
+
+    await game.make_move(row=1, col=1, player_id=player1_fixture.id)
+    await game.make_move(row=2, col=1, player_id=player2_fixture.id)
+    await game.make_move(row=1, col=2, player_id=player1_fixture.id)
+    await game.make_move(row=2, col=2, player_id=player2_fixture.id)
+    await game.make_move(row=3, col=3, player_id=player1_fixture.id)
 
     board = game.board.board
 
@@ -129,20 +140,24 @@ async def test_game__set_state__check_call_count(
     player2_fixture,
     board_fixture,
     checker_fixture,
+    repo_fixture,
     mocker,
 ):
-    repo_mocked = mocker.patch("src.repo.repository_game.repo")
     save_state_mocked = mocker.patch("src.logic.game.game.Game._save_state")
-    repo_mocked.configure_mock(**{"set_game": AsyncMock(asyncio.Future())})
+    mocker.patch("src.logic.game.game.Game._update_state")
+
+    repo_fixture.set_game.return_value = AsyncMock()
 
     game = Game(
-        repo=repo_mocked,
+        repo=repo_fixture,
         board=board_fixture,
         players=[player1_fixture, player2_fixture],
         checker=checker_fixture,
     )
 
     await game.start()
+
+    assert game.current_move_player == player1_fixture
 
     await game.make_move(row=1, col=1, player_id=player1_fixture.id)
     await game.make_move(row=2, col=1, player_id=player2_fixture.id)

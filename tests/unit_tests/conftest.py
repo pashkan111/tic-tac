@@ -24,7 +24,7 @@ def board_fixture() -> BoardArray:
 
 @pytest.fixture()
 def repo_fixture() -> RepositoryGame:
-    return RepositoryGame(redis_client=Mock())
+    return Mock(spec=RepositoryGame)
 
 
 @pytest.fixture()

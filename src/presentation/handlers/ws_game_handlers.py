@@ -16,6 +16,8 @@ from src.logic.events.messages import (
     PlayerMove,
     PlayerMoveMessage,
     MessageStatus,
+    PlayerDisconnected,
+    PlayerDisconnectedMessage,
 )
 
 
@@ -110,6 +112,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                         )
                     )
                 )
+
                 await connection_manager.send_event_to_all_players(
                     message=PlayerMoveMessage(
                         data=PlayerMove(
@@ -148,7 +151,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                         winner=None,
                         current_move_player_id=game.current_move_player.id,
                     ),
-                    message_status=MessageStatus.FINISH,
+                    message_status=MessageStatus.MOVE,
                 ),
                 player_id=player_id,
                 room_id=room_id,
@@ -157,4 +160,15 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
     except Exception as e:
         print(e)
     finally:
+        print("DISCONNECT", player_id)
         await connection_manager.disconnect(room_id=room_id, player_id=player_id)
+        print("MESSAGE SENT", player_id)
+        await connection_manager.send_event_to_all_players(
+            message=PlayerDisconnectedMessage(
+                data=PlayerDisconnected(
+                    player=player,
+                )
+            ),
+            player_id=player_id,
+            room_id=room_id,
+        )
