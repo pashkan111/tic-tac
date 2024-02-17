@@ -1,6 +1,7 @@
 from fastapi.websockets import WebSocket
 from fastapi.routing import APIRouter
 import uuid
+import asyncio
 from src.logic.consumers.connection_manager import connection_manager
 from src.mappers.event_mappers import map_event_from_client
 from src.mappers.response_mappers import map_response
@@ -63,20 +64,29 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
 
     await connection_manager.connect(websocket=websocket, player_id=player_id, room_id=room_id)
 
-    await websocket.send_bytes(
-        map_response(
-            GameStartResponse(
-                status=ResponseStatus.CONNECTED,
-                message=None,
-                data=StartGameResponseEvent(board=game.board.board, current_move_player_id=game.current_move_player.id),
+    player = next(filter(lambda p: p.id == player_id, game.players))
+
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(
+            websocket.send_bytes(
+                map_response(
+                    GameStartResponse(
+                        status=ResponseStatus.CONNECTED,
+                        message=None,
+                        data=StartGameResponseEvent(
+                            board=game.board.board, current_move_player_id=game.current_move_player.id
+                        ),
+                    )
+                )
             )
         )
-    )
-    player = next(filter(lambda p: p.id == player_id, game.players))
-    await connection_manager.send_event_to_all_players(
-        message=PlayerConnectedMessage(data=PlayerConnected(player=player)), player_id=player_id, room_id=room_id
-    )
-    # TODO run in asyncio.gather
+        tg.create_task(
+            connection_manager.send_event_to_all_players(
+                message=PlayerConnectedMessage(data=PlayerConnected(player=player)),
+                player_id=player_id,
+                room_id=room_id,
+            )
+        )
 
     try:
         while True:
@@ -99,70 +109,75 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                 continue
 
             if move_result.is_winner is True:
-                await websocket.send_bytes(
-                    map_response(
-                        ClientResponse(
-                            status=ResponseStatus.FINISHED,
-                            message=None,
-                            data=MoveCreatedResponseEvent(
-                                board=game.board.board,
-                                current_move_player_id=None,
-                                winner=move_result.chip.value,  # TODO return user id
+                async with asyncio.TaskGroup() as tg:
+                    tg.create_task(
+                        websocket.send_bytes(
+                            map_response(
+                                ClientResponse(
+                                    status=ResponseStatus.FINISHED,
+                                    message=None,
+                                    data=MoveCreatedResponseEvent(
+                                        board=game.board.board,
+                                        current_move_player_id=None,
+                                        winner=move_result.chip.value,  # TODO return user id
+                                    ),
+                                )
+                            )
+                        )
+                    )
+                    tg.create_task(
+                        connection_manager.send_event_to_all_players(
+                            message=PlayerMoveMessage(
+                                data=PlayerMove(
+                                    player=player,
+                                    board=game.board.board,
+                                    winner=move_result.chip.value,
+                                    current_move_player_id=None,
+                                ),
+                                message_status=MessageStatus.FINISH,
                             ),
+                            player_id=player_id,
+                            room_id=room_id,
+                        )
+                    )
+                return
+
+            async with asyncio.TaskGroup() as tg:
+                tg.create_task(
+                    websocket.send_bytes(
+                        map_response(
+                            ClientResponse(
+                                status=ResponseStatus.SUCCESS,
+                                message=None,
+                                data=MoveCreatedResponseEvent(
+                                    board=game.board.board,
+                                    current_move_player_id=game.current_move_player.id,
+                                    winner=None,
+                                ),
+                            )
                         )
                     )
                 )
-
-                await connection_manager.send_event_to_all_players(
-                    message=PlayerMoveMessage(
-                        data=PlayerMove(
-                            player=player,
-                            board=game.board.board,
-                            winner=move_result.chip.value,
-                            current_move_player_id=None,
+                tg.create_task(
+                    connection_manager.send_event_to_all_players(
+                        message=PlayerMoveMessage(
+                            data=PlayerMove(
+                                player=player,
+                                board=game.board.board,
+                                winner=None,
+                                current_move_player_id=game.current_move_player.id,
+                            ),
+                            message_status=MessageStatus.MOVE,
                         ),
-                        message_status=MessageStatus.FINISH,
-                    ),
-                    player_id=player_id,
-                    room_id=room_id,
-                )
-
-                return
-
-            await websocket.send_bytes(
-                map_response(
-                    ClientResponse(
-                        status=ResponseStatus.SUCCESS,
-                        message=None,
-                        data=MoveCreatedResponseEvent(
-                            board=game.board.board,
-                            current_move_player_id=game.current_move_player.id,
-                            winner=None,
-                        ),
+                        player_id=player_id,
+                        room_id=room_id,
                     )
                 )
-            )
-
-            await connection_manager.send_event_to_all_players(
-                message=PlayerMoveMessage(
-                    data=PlayerMove(
-                        player=player,
-                        board=game.board.board,
-                        winner=None,
-                        current_move_player_id=game.current_move_player.id,
-                    ),
-                    message_status=MessageStatus.MOVE,
-                ),
-                player_id=player_id,
-                room_id=room_id,
-            )
 
     except Exception as e:
         print(e)
     finally:
-        print("DISCONNECT", player_id)
         await connection_manager.disconnect(room_id=room_id, player_id=player_id)
-        print("MESSAGE SENT", player_id)
         await connection_manager.send_event_to_all_players(
             message=PlayerDisconnectedMessage(
                 data=PlayerDisconnected(

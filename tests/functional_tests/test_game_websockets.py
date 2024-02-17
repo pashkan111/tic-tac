@@ -67,6 +67,7 @@ async def test_game_ws_handler__connected(pg, websocket_client, player_1, redis)
         }
 
     # Once clients disconnects from the server, player id is removed from redis
+    await asyncio.sleep(0.5)
     assert await redis.get_set_values(name=f"players_by_rooms:{str(room_id)}") == {str(first_player_id)}
 
 

@@ -28,7 +28,6 @@ class PlayerConnectionManager:
         for player in all_players:
             if player == player_id:
                 continue
-            # TODO add sending responses
             websocket = self.active_connections.get(player)
             if websocket:
                 await websocket.send_bytes(message.to_json().encode())
