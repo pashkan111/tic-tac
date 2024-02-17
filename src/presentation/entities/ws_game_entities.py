@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any
 from src.logic.events.responses import MoveCreatedResponseEvent
 from enum import StrEnum
+from src.logic.events.messages import MessageType
 
 
 class ResponseStatus(StrEnum):
@@ -19,6 +20,7 @@ class BaseResponse:
     status: ResponseStatus
     message: str | None
     data: Any | None
+    type: MessageType = MessageType.RESPONSE
 
 
 @dataclass(slots=True)

@@ -4,7 +4,7 @@ from src.mappers.game_mapper import (
     Chips,
 )
 from src.mappers.event_mappers import map_event_from_client
-from src.logic.events.events import MoveEventData, StartGameEventData, BaseEvent, ClientEventType
+from src.logic.events.events import StartGameEventData
 import json
 
 

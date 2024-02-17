@@ -10,8 +10,19 @@ from src.presentation.entities.ws_game_entities import GameStartResponse, Respon
 from src.logic.exceptions import RoomNotFoundInRepoException, BadParamsException, AbstractException
 from src.logic.auth.authentication import check_user
 from src.logic.events.responses import StartGameResponseEvent, MoveCreatedResponseEvent
+from src.logic.events.messages import (
+    PlayerConnectedMessage,
+    PlayerConnected,
+    PlayerMove,
+    PlayerMoveMessage,
+    MessageStatus,
+)
+
 
 ws_game_router = APIRouter(prefix="/game_ws")
+
+
+# TODO make state machine
 
 
 @ws_game_router.websocket("/{room_id}")
@@ -49,6 +60,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
         return
 
     await connection_manager.connect(websocket=websocket, player_id=player_id, room_id=room_id)
+
     await websocket.send_bytes(
         map_response(
             GameStartResponse(
@@ -58,7 +70,11 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
             )
         )
     )
-    await connection_manager.send_event_to_all_players(event=request_event, player_id=player_id, room_id=room_id)
+    player = next(filter(lambda p: p.id == player_id, game.players))
+    await connection_manager.send_event_to_all_players(
+        message=PlayerConnectedMessage(data=PlayerConnected(player=player)), player_id=player_id, room_id=room_id
+    )
+    # TODO run in asyncio.gather
 
     try:
         while True:
@@ -94,6 +110,19 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                         )
                     )
                 )
+                await connection_manager.send_event_to_all_players(
+                    message=PlayerMoveMessage(
+                        data=PlayerMove(
+                            player=player,
+                            board=game.board.board,
+                            winner=move_result.chip.value,
+                            current_move_player_id=None,
+                        ),
+                        message_status=MessageStatus.FINISH,
+                    ),
+                    player_id=player_id,
+                    room_id=room_id,
+                )
 
                 return
 
@@ -109,6 +138,20 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                         ),
                     )
                 )
+            )
+
+            await connection_manager.send_event_to_all_players(
+                message=PlayerMoveMessage(
+                    data=PlayerMove(
+                        player=player,
+                        board=game.board.board,
+                        winner=None,
+                        current_move_player_id=game.current_move_player.id,
+                    ),
+                    message_status=MessageStatus.FINISH,
+                ),
+                player_id=player_id,
+                room_id=room_id,
             )
 
     except Exception as e:

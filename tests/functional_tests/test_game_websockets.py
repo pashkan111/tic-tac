@@ -13,6 +13,7 @@ async def test_game_ws_handler__bad_message(websocket_client, pg):
             "status": "ERROR",
             "message": "Bad Params. Params: message=Hello, WebSocket!;",
             "data": None,
+            "type": "RESPONSE",
         }
 
 
@@ -22,7 +23,12 @@ async def test_game_ws_handler__bad_token(websocket_client):
     async with websocket_client.websocket_connect(f"/game_ws/{str(room_id)}") as websocket:
         await websocket.send_text(orjson.dumps({"event_type": "START", "data": {"token": "token"}}))
         response = await websocket.receive_json()
-        assert response == {"message": "Invalid Token. Token: token", "status": "ERROR", "data": None}
+        assert response == {
+            "message": "Invalid Token. Token: token",
+            "status": "ERROR",
+            "data": None,
+            "type": "RESPONSE",
+        }
 
 
 @pytest.mark.asyncio
@@ -52,6 +58,7 @@ async def test_game_ws_handler__connected(pg, websocket_client, player_1, redis)
             "status": "CONNECTED",
             "message": None,
             "data": {"board": board, "current_move_player_id": 3},
+            "type": "RESPONSE",
         }
         assert await redis.get_set_values(name=f"players_by_rooms:{str(room_id)}") == {
             str(player_1.id),
@@ -91,6 +98,7 @@ async def test_game_ws_handler__make_moves__error(pg, websocket_client, player_1
             "status": "ERROR",
             "message": "Error making move. Row=0, col=1",
             "data": None,
+            "type": "RESPONSE",
         }
 
         await websocket.send_text(orjson.dumps({"event_type": "MOVE", "data": {"row": 1, "col": 1}}))
@@ -109,6 +117,7 @@ async def test_game_ws_handler__make_moves__error(pg, websocket_client, player_1
                 "current_move_player_id": player_2.id,
                 "winner": None,
             },
+            "type": "RESPONSE",
         }
 
 

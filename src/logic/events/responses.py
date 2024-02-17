@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-from src.logic.game.schemas import Board
-from src.logic.game.schemas import PlayerId
+from src.logic.game.schemas import Board, PlayerId
 
 
 @dataclass(frozen=True, slots=True)
