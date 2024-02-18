@@ -48,6 +48,11 @@ class Game(GameAbstract):
             0
         ]
 
+    def _get_player_by_chip(self, chip: Chips | None) -> Player | None:
+        if chip is None:
+            return None
+        return list(filter(lambda player: player.chip == chip, self.players))[0]
+
     def _set_chips_to_players(self) -> None:
         chips_iterator = iter(Chips)
         for player in self.players:

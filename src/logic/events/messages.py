@@ -1,7 +1,7 @@
 from dataclasses import dataclass, asdict
 from enum import StrEnum
 from typing import Any
-from src.logic.game.schemas import Board, PlayerId
+from src.logic.game.schemas import Board
 from src.logic.game.player import Player
 import orjson
 
@@ -48,8 +48,8 @@ class PlayerDisconnected:
 class PlayerMove:
     player: Player
     board: Board
-    current_move_player_id: PlayerId | None
-    winner: PlayerId | None
+    current_move_player: Player | None
+    winner: Player | None
 
 
 @dataclass

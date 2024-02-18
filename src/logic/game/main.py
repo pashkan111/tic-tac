@@ -15,7 +15,6 @@ from .schemas import GameRedisSchema
 
 def _make_game(game_data: GameRedisSchema) -> Game:
     board = BoardArray(board=game_data.board)
-    # TODO add checking players in waiting_list
     return Game(
         repo=repo,
         board=board,

@@ -74,7 +74,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                         status=ResponseStatus.CONNECTED,
                         message=None,
                         data=StartGameResponseEvent(
-                            board=game.board.board, current_move_player_id=game.current_move_player.id
+                            board=game.board.board, current_move_player=game.current_move_player
                         ),
                     )
                 )
@@ -118,8 +118,8 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                                     message=None,
                                     data=MoveCreatedResponseEvent(
                                         board=game.board.board,
-                                        current_move_player_id=None,
-                                        winner=move_result.chip.value,  # TODO return user id
+                                        current_move_player=None,
+                                        winner=game._get_player_by_chip(move_result.chip),
                                     ),
                                 )
                             )
@@ -131,8 +131,8 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                                 data=PlayerMove(
                                     player=player,
                                     board=game.board.board,
-                                    winner=move_result.chip.value,
-                                    current_move_player_id=None,
+                                    winner=game._get_player_by_chip(move_result.chip),
+                                    current_move_player=None,
                                 ),
                                 message_status=MessageStatus.FINISH,
                             ),
@@ -151,7 +151,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                                 message=None,
                                 data=MoveCreatedResponseEvent(
                                     board=game.board.board,
-                                    current_move_player_id=game.current_move_player.id,
+                                    current_move_player=game.current_move_player,
                                     winner=None,
                                 ),
                             )
@@ -165,7 +165,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                                 player=player,
                                 board=game.board.board,
                                 winner=None,
-                                current_move_player_id=game.current_move_player.id,
+                                current_move_player=game.current_move_player,
                             ),
                             message_status=MessageStatus.MOVE,
                         ),
