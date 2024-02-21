@@ -71,3 +71,7 @@ class UserInvalidCredsException(AbstractException):
 
 class MoveTurnException(AbstractException):
     message = "Others players turn to move. Player id: {player_id}"
+
+
+class StateValidationExceptions(AbstractException):
+    message = "Wrong event type. Event type: {event_type}, expecting: {expecting_event_type}"

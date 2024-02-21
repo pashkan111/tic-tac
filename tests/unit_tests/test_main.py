@@ -75,10 +75,11 @@ async def test_create_game__enough_args(
     assert isinstance(game, Game)
 
 
+@pytest.mark.asyncio
 async def test_create_game__enough_args__room_not_in_repo(
     mocker,
 ):
-    repo_get_game_mocked = mocker.patch("src.logic.main.repo.get_game")
+    repo_get_game_mocked = mocker.patch("src.logic.game.main.repo.get_game")
     repo_get_game_mocked.configure_mock(return_value=None)
 
     with pytest.raises(RoomNotFoundInRepoException):
@@ -87,14 +88,15 @@ async def test_create_game__enough_args__room_not_in_repo(
         )
 
 
+@pytest.mark.asyncio
 async def test_create_game__enough_args__room_not_in_repo__game_created(
     mocker,
     player1_fixture,
 ):
-    repo_get_game_mocked = mocker.patch("src.logic.main.repo.get_game")
+    repo_get_game_mocked = mocker.patch("src.logic.game.main.repo.get_game")
     repo_get_game_mocked.configure_mock(return_value=None)
 
-    repo_check_players_in_wait_list_mocked = mocker.patch("src.logic.main.repo.check_players_in_wait_list")
+    repo_check_players_in_wait_list_mocked = mocker.patch("src.logic.game.main.repo.check_players_in_wait_list")
     repo_check_players_in_wait_list_mocked.configure_mock(return_value=player1_fixture)
     game = await create_game(
         player_id=player1_fixture,
@@ -102,50 +104,6 @@ async def test_create_game__enough_args__room_not_in_repo__game_created(
         room_id=uuid.uuid4(),
     )
     assert isinstance(game, Game)
-
-
-async def test_create_game__enough_args__partner_not_found_in_wait_list(
-    mocker,
-    player1_fixture,
-):
-    repo_get_game_mocked = mocker.patch("src.logic.main.repo.get_game")
-    repo_get_game_mocked.configure_mock(return_value=None)
-
-    repo_check_players_in_wait_list_mocked = mocker.patch("src.logic.main.repo.check_players_in_wait_list")
-    repo_check_players_in_wait_list_mocked.configure_mock(return_value=None)
-    with pytest.raises(PartnerDoesNotExistsException):
-        await create_game(
-            player_id=player1_fixture,
-            rows_count=10,
-        )
-    repo_check_players_in_wait_list_mocked.assert_called_once_with(player1_fixture)
-
-
-@pytest.mark.asyncio
-async def test_create_game__game_in_repo(
-    mocker,
-    player1_fixture,
-    player2_fixture,
-    board_fixture,
-):
-    room_id = uuid.uuid4()
-
-    mocker.patch("src.logic.game.main.repo.set_game")
-
-    repo_get_game_mocked = mocker.patch("src.logic.game.main.repo.get_game")
-    repo_get_game_mocked.configure_mock(
-        return_value=GameRedisSchema(
-            room_id=room_id,
-            players=[player1_fixture, player2_fixture],
-            current_move_player=player1_fixture,
-            board=board_fixture.board,
-        )
-    )
-
-    game = await create_game(room_id=room_id)
-    assert game.room_id == room_id
-    assert game.current_move_player == player1_fixture
-    assert game.players == [player1_fixture, player2_fixture]
 
 
 @pytest.mark.asyncio

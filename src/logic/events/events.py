@@ -38,6 +38,6 @@ class MoveEvent(BaseEvent):
 
 
 @dataclass(slots=True)
-class StartGameEvent:
+class StartGameEvent(BaseEvent):
     data: StartGameEventData
     event_type: ClientEventType = ClientEventType.START

@@ -5,4 +5,4 @@ lint:
 	ruff .
 
 test:
-	docker-compose up -d && pytest . -vv
+	docker-compose up -d && pytest . -vv && docker-compose down

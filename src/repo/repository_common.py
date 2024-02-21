@@ -1,6 +1,7 @@
 from python_tools.postgres_tools import Pg
 from settings import POSTGRES_CONNECTION_STRING
 from src.logic.auth.schemas import UserData
+from src.logic.exceptions import UserNotFoundException
 
 
 class RepositoryCommon:
@@ -26,7 +27,7 @@ class RepositoryCommon:
             return UserData(user_id=user["id"], username=user["username"], password=user["password"])
         return None
 
-    async def get_user_by_id(self, id: int) -> UserData | None:
+    async def get_user_by_id(self, id: int) -> UserData:
         query = """
             SELECT * FROM users
             WHERE id = $1
@@ -34,7 +35,7 @@ class RepositoryCommon:
         user = await self.pg.get().fetchrow(query, id)
         if user:
             return UserData(user_id=user["id"], username=user["username"], password=user["password"])
-        return None
+        raise UserNotFoundException(user_id=id)
 
 
 pg = Pg(POSTGRES_CONNECTION_STRING)
