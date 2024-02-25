@@ -124,7 +124,6 @@ async def test_game_ws_handler__make_moves__error(pg, websocket_client, player_1
 
 
 @pytest.mark.asyncio
-# @pytest.mark.skip()
 async def test_game_ws_handler__make_moves(pg, websocket_client, websocket_client2, player_1, player_2, redis):
     room_id = uuid.uuid4()
     board = [

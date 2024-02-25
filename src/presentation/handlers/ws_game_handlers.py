@@ -20,7 +20,12 @@ from src.logic.events.messages import (
     PlayerDisconnected,
     PlayerDisconnectedMessage,
 )
-from src.logic.consumers.state_machine import GameStateMachine, MachineActionStatus, StartGameStateData
+from src.logic.consumers.state_machine import (
+    GameStateMachine,
+    MachineActionStatus,
+    StartGameStateData,
+    BaseMachineRequest,
+)
 
 ws_game_router = APIRouter(prefix="/game_ws")
 
@@ -41,7 +46,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
         return
 
     state_machine = GameStateMachine()
-    handled_event_response = await state_machine.handle_event(event=request_event, room_id=room_id)
+    handled_event_response = await state_machine.handle_event(BaseMachineRequest(room_id=room_id, event=request_event))
     if handled_event_response.status == MachineActionStatus.FAILED:
         await websocket.send_bytes(
             map_response(
@@ -53,28 +58,6 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
     state_data: StartGameStateData = handled_event_response.data
     game = state_data.game
     player_id = state_data.player_id
-
-    # if not request_event.event_type == ClientEventType.START:
-    #     await websocket.send_bytes(
-    #         map_response(GameStartResponse(status=ResponseStatus.ERROR, message="Wrong event type", data=None))
-    #     )
-    #     return
-
-    # try:
-    #     player_id = await check_user(request_event.data.token)
-    # except AbstractException as e:
-    #     await websocket.send_bytes(
-    #         map_response(GameStartResponse(status=ResponseStatus.ERROR, message=e.message, data=None))
-    #     )
-    #     return
-
-    # try:
-    #     game = await create_game(room_id=room_id)
-    # except RoomNotFoundInRepoException as e:
-    #     await websocket.send_bytes(
-    #         map_response(GameStartResponse(status=ResponseStatus.ERROR, message=e.message, data=None))
-    #     )
-    #     return
 
     await connection_manager.connect(
         websocket=websocket, player_id=handled_event_response.data.player_id, room_id=room_id
@@ -109,21 +92,23 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
         while True:
             data = await websocket.receive_text()
             request_event = map_event_from_client(data)
-            if request_event.event_type != ClientEventType.MOVE:
+
+            handled_event_response = await state_machine.handle_event(
+                BaseMachineRequest(room_id=room_id, event=request_event, player_id=player_id, game=game)
+            )
+            if handled_event_response.status == MachineActionStatus.FAILED:
                 await websocket.send_bytes(
-                    map_response(GameStartResponse(status=ResponseStatus.ERROR, message="Wrong event type", data=None))
+                    map_response(
+                        GameStartResponse(
+                            status=ResponseStatus.ERROR, message=handled_event_response.message, data=None
+                        )
+                    )
                 )
                 continue
 
-            try:
-                move_result = await game.make_move(
-                    col=request_event.data.col, row=request_event.data.row, player_id=player_id
-                )
-            except Exception as e:
-                await websocket.send_bytes(
-                    map_response(GameStartResponse(status=ResponseStatus.ERROR, message=e.message, data=None))
-                )
-                continue
+            # TODO handle surrender status\\
+
+            move_result = handled_event_response.data.move_result
 
             if move_result.is_winner is True:
                 async with asyncio.TaskGroup() as tg:
