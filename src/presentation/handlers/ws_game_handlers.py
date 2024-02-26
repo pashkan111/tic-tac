@@ -5,11 +5,8 @@ import asyncio
 from src.logic.consumers.connection_manager import connection_manager
 from src.mappers.event_mappers import map_event_from_client
 from src.mappers.response_mappers import map_response
-from src.logic.game.main import create_game
-from src.logic.events.events import ClientEventType
 from src.presentation.entities.ws_game_entities import GameStartResponse, ResponseStatus, ClientResponse
-from src.logic.exceptions import RoomNotFoundInRepoException, BadParamsException, AbstractException
-from src.logic.auth.authentication import check_user
+from src.logic.exceptions import BadParamsException
 from src.logic.events.responses import StartGameResponseEvent, MoveCreatedResponseEvent
 from src.logic.events.messages import (
     PlayerConnectedMessage,
@@ -109,8 +106,8 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
             # TODO handle surrender status\\
 
             move_result = handled_event_response.data.move_result
-
             if move_result.is_winner is True:
+                state_machine.next()
                 async with asyncio.TaskGroup() as tg:
                     tg.create_task(
                         websocket.send_bytes(

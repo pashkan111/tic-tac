@@ -17,7 +17,7 @@ from src.logic.game.schemas import PlayerId
 
 from dataclasses import dataclass
 from typing import Any
-from enum import StrEnum
+from enum import StrEnum, Enum
 from src.logic.game.main import create_game
 from uuid import UUID
 from src.logic.game.checker import CheckResult
@@ -34,10 +34,6 @@ class BaseMachineRequest:
     event: BaseEvent
     player_id: PlayerId | None = None
     game: Game | None = None
-
-    @property
-    def data(self):
-        return self.event.data
 
 
 @dataclass(slots=True)
@@ -132,7 +128,7 @@ class FinishedState(GameBaseState):
 
 
 class GameStateMachine:
-    _states = [StartState, MoveState, SurrenderState, FinishedState]
+    _states = [StartState, MoveState, FinishedState, SurrenderState]
     current_state: BaseState
     initialized: bool = False
 
@@ -157,3 +153,10 @@ class GameStateMachine:
 
     def next(self):
         self.current_state = self.current_state.next_state
+
+
+class GameStates(Enum):
+    START = StartState
+    MOVE_STATE = MoveState
+    FINISHED_STATE = FinishedState
+    SURRENDER_STATE = SurrenderState

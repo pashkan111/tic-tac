@@ -21,14 +21,20 @@ class BaseEvent:
 
 
 @dataclass(slots=True)
+class StartGameEventData:
+    token: Token
+
+
+@dataclass(slots=True)
 class MoveEventData:
     row: int
     col: int
 
 
 @dataclass(slots=True)
-class StartGameEventData:
-    token: Token
+class StartGameEvent(BaseEvent):
+    data: StartGameEventData
+    event_type: ClientEventType = ClientEventType.START
 
 
 @dataclass(slots=True)
@@ -38,6 +44,6 @@ class MoveEvent(BaseEvent):
 
 
 @dataclass(slots=True)
-class StartGameEvent(BaseEvent):
-    data: StartGameEventData
+class SurrenderEvent(BaseEvent):
     event_type: ClientEventType = ClientEventType.START
+    data: Any | None = None
