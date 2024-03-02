@@ -22,6 +22,8 @@ from src.logic.consumers.state_machine import (
     MachineActionStatus,
     StartGameStateData,
     BaseMachineRequest,
+    get_game_state,
+    GameState,
 )
 
 ws_game_router = APIRouter(prefix="/game_ws")
@@ -43,6 +45,9 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
         return
 
     state_machine = GameStateMachine()
+    # can_change = state_machine.can_change_state(GameState.START_STATE)
+    state_machine.change_state(GameState.START_STATE)
+
     handled_event_response = await state_machine.handle_event(BaseMachineRequest(room_id=room_id, event=request_event))
     if handled_event_response.status == MachineActionStatus.FAILED:
         await websocket.send_bytes(
@@ -83,12 +88,23 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                 room_id=room_id,
             )
         )
-    state_machine.next()
+
+    # TODO add finish state
+    state_machine.change_state(GameState.MOVE_STATE)
 
     try:
         while True:
             data = await websocket.receive_text()
-            request_event = map_event_from_client(data)
+            try:
+                request_event = map_event_from_client(data)
+            except BadParamsException as e:
+                await websocket.send_bytes(
+                    map_response(GameStartResponse(status=ResponseStatus.ERROR, message=e.message, data=None))
+                )
+                continue
+
+            game_state = get_game_state(request_event.event_type)
+            state_machine.change_state(game_state)
 
             handled_event_response = await state_machine.handle_event(
                 BaseMachineRequest(room_id=room_id, event=request_event, player_id=player_id, game=game)
@@ -107,7 +123,8 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
 
             move_result = handled_event_response.data.move_result
             if move_result.is_winner is True:
-                state_machine.next()
+                state_machine.change_state(GameState.FINISHED_STATE)
+                # TODO handle finish state
                 async with asyncio.TaskGroup() as tg:
                     tg.create_task(
                         websocket.send_bytes(

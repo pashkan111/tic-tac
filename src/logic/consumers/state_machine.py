@@ -16,8 +16,8 @@ from src.logic.game.game import Game
 from src.logic.game.schemas import PlayerId
 
 from dataclasses import dataclass
-from typing import Any
-from enum import StrEnum, Enum
+from typing import Any, Callable
+from enum import StrEnum
 from src.logic.game.main import create_game
 from uuid import UUID
 from src.logic.game.checker import CheckResult
@@ -54,32 +54,54 @@ class MadeMoveStateData:
     move_result: CheckResult
 
 
-class BaseState:
-    next_state: "BaseState"
+class GameState(StrEnum):
+    NEW_STATE = "NEW_STATE"
+    START_STATE = "START_STATE"
+    MOVE_STATE = "MOVE_STATE"
+    FINISHED_STATE = "FINISHED_STATE"
+    SURRENDER_STATE = "SURRENDER_STATE"
 
-    def __init__(self, next_state: "BaseState" = None):
-        self.next_state = next_state
 
-    def _validate(self, *args, **kwargs):
-        ...
+_EVENTS_MAPPING = {
+    ClientEventType.START: GameState.START_STATE,
+    ClientEventType.MOVE: GameState.MOVE_STATE,
+    ClientEventType.SURRENDER: GameState.SURRENDER_STATE,
+}
 
-    async def run(self, *args, **kwargs) -> BaseMachineResponse:
-        ...
+
+def get_game_state(client_state: ClientEventType) -> GameState:
+    return _EVENTS_MAPPING[client_state]
 
 
 # GAME
 
 
-class GameBaseState(BaseState):
+class GameBaseState:
     client_type: ClientEventType | None
+    state_name: GameState
+    next_states: list["GameState"]
 
     def _validate(self, data: BaseMachineRequest) -> None:
         if data.event.event_type != self.client_type:
             raise StateValidationExceptions(event_type=data.event.event_type, expecting_event_type=self.client_type)
 
+    async def run(self, data: BaseMachineRequest) -> BaseMachineResponse:
+        ...
+
+
+class NewState(GameBaseState):
+    client_type = None
+    state_name = GameState.NEW_STATE
+    next_states = [GameState.START_STATE]
+
+    def _validate(self, data: BaseMachineRequest) -> None:
+        ...
+
 
 class StartState(GameBaseState):
     client_type = ClientEventType.START
+    state_name = GameState.START_STATE
+    next_states = [GameState.MOVE_STATE, GameState.SURRENDER_STATE, GameState.FINISHED_STATE]
 
     async def run(self, data: BaseMachineRequest) -> BaseMachineResponse:
         self._validate(data)
@@ -102,6 +124,8 @@ class StartState(GameBaseState):
 
 class MoveState(GameBaseState):
     client_type = ClientEventType.MOVE
+    state_name = GameState.MOVE_STATE
+    next_states = [GameState.FINISHED_STATE, GameState.SURRENDER_STATE]
 
     async def run(self, data: BaseMachineRequest) -> BaseMachineResponse:
         self._validate(data)
@@ -118,45 +142,56 @@ class MoveState(GameBaseState):
 
 class SurrenderState(GameBaseState):
     client_type = ClientEventType.SURRENDER
+    state_name = GameState.SURRENDER_STATE
+    next_states = []
+
+    async def run(self, data: BaseMachineRequest) -> BaseMachineResponse:
+        self._validate(data)
 
 
 class FinishedState(GameBaseState):
     client_type = None
+    state_name = GameState.FINISHED_STATE
+    next_states = [GameState.FINISHED_STATE]
 
     def _validate(self, *args, **kwargs):
         pass
 
 
 class GameStateMachine:
-    _states = [StartState, MoveState, FinishedState, SurrenderState]
-    current_state: BaseState
-    initialized: bool = False
-
-    def __init__(self):
-        self._add_states(self._states)
-
-    def _add_states(self, states: list[type[BaseState]]):
-        if self.initialized:
-            raise ValueError("StateMachine already initialized")
-        if not states:
-            raise ValueError("States list is empty")
-        previous_state = None
-        for state in states[::-1]:
-            current_state = state(next_state=previous_state)
-            previous_state = current_state
-
-        self.current_state = current_state
-        self.initialized = True
+    current_state: GameBaseState = NewState()
 
     async def handle_event(self, data: BaseMachineRequest) -> BaseMachineResponse:
         return await self.current_state.run(data=data)
 
-    def next(self):
-        self.current_state = self.current_state.next_state
+    def can_change_state(self, state: GameState) -> bool:
+        return state in self.current_state.next_states
+
+    def change_state(self, state: GameState):
+        if self.current_state.state_name == state:
+            return
+
+        state_method = _get_state_method(state_machine=self, state=state)
+        state_method()
+
+    def _start_state(self):
+        self.current_state = StartState()
+
+    def _move_state(self):
+        if not GameState.MOVE_STATE in self.current_state.next_states:
+            raise StateValidationExceptions
+        self.current_state = MoveState()
+
+    def _surrender_state(self):
+        if not GameState.SURRENDER_STATE in self.current_state.next_states:
+            raise StateValidationExceptions
+        self.current_state = SurrenderState()
+
+    def _finished_state(self):
+        if not GameState.FINISHED_STATE in self.current_state.next_states:
+            raise StateValidationExceptions
+        self.current_state = FinishedState()
 
 
-class GameStates(Enum):
-    START = StartState
-    MOVE_STATE = MoveState
-    FINISHED_STATE = FinishedState
-    SURRENDER_STATE = SurrenderState
+def _get_state_method(*, state: GameState, state_machine: GameStateMachine) -> Callable:
+    return getattr(state_machine, f"_{state.lower()}")
