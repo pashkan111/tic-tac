@@ -65,6 +65,32 @@ class Game(GameAbstract):
         if not player_id == self.current_move_player.id:
             raise MoveTurnException(player_id=self.current_move_player.id)
 
+    async def _update_state(self):
+        game_data = await self.repo.get_game(self.room_id)
+        self.current_move_player = game_data.current_move_player
+        self.board.board = game_data.board
+
+    async def _save_state(self) -> None:
+        game_data = GameRedisSchema(
+            room_id=self.room_id,
+            players=self.players,
+            current_move_player=self.current_move_player,
+            board=self.board.board,
+        )
+        await asyncio.gather(
+            *[
+                self.repo.set_game(game_data),
+                self.repo.set_game_players(player_id=self.players[0].id, room_id=self.room_id),
+                self.repo.set_game_players(player_id=self.players[1].id, room_id=self.room_id),
+                self.repo.add_players_to_room(
+                    player_ids=[self.players[0].id, self.players[1].id],
+                    room_id=self.room_id,
+                ),
+                # TODO remove this from here
+                self.repo.remove_players_from_wait_list(rows_count=self.board.rows_count),
+            ]
+        )
+
     async def start(self):
         if not self._check_players_count():
             raise PlayersNotEnoughException(room_id=self.room_id)
@@ -89,30 +115,5 @@ class Game(GameAbstract):
         await self._save_state()
         return check_result
 
-    async def _update_state(self):
-        game_data = await self.repo.get_game(self.room_id)
-        self.current_move_player = game_data.current_move_player
-        self.board.board = game_data.board
-
-    async def _save_state(self) -> None:
-        game_data = GameRedisSchema(
-            room_id=self.room_id,
-            players=self.players,
-            current_move_player=self.current_move_player,
-            board=self.board.board,
-        )
-        await asyncio.gather(
-            *[
-                self.repo.set_game(game_data),
-                self.repo.set_game_players(player_id=self.players[0].id, room_id=self.room_id),
-                self.repo.set_game_players(player_id=self.players[1].id, room_id=self.room_id),
-                self.repo.add_players_to_room(
-                    player_ids=[self.players[0].id, self.players[1].id],
-                    room_id=self.room_id,
-                ),
-                self.repo.remove_players_from_wait_list(rows_count=self.board.rows_count),
-            ]
-        )
-
-    async def finish(self):
-        ...
+    async def surrender(self, player_id: PlayerId):
+        await self._update_state()

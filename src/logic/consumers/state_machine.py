@@ -165,7 +165,7 @@ class GameStateMachine:
         return await self.current_state.run(data=data)
 
     def can_change_state(self, state: GameState) -> bool:
-        return state in self.current_state.next_states
+        return state in self.current_state.next_states or state == self.current_state.state_name
 
     def change_state(self, state: GameState):
         if self.current_state.state_name == state:

@@ -10,7 +10,12 @@ class StartGameResponseEvent:
 
 
 @dataclass(frozen=True, slots=True)
-class MoveCreatedResponseEvent(StartGameResponseEvent):
+class MoveCreatedResponseEvent:
     board: Board
     current_move_player: Player | None
     winner: Player | None
+
+
+@dataclass(frozen=True, slots=True)
+class SurrenderResponseEvent:
+    winner: Player

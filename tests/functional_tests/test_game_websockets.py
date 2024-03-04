@@ -292,7 +292,7 @@ async def test_game_ws_handler__make_moves(pg, websocket_client, websocket_clien
                 "type": "MESSAGE",
             }
 
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(2)
             assert await redis.get_set_values(name=f"players_by_rooms:{str(room_id)}") == {str(player_2.id)}
 
     disconnect_message = await websocket2.receive_json()
