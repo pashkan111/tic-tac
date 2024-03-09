@@ -65,6 +65,7 @@ async def test_create_game__enough_args(
 
     mocker.patch("src.logic.game.main.repo.add_players_to_room")
 
+    mocker.patch("src.logic.game.main.repo.remove_players_from_wait_list")
     mocker.patch("src.logic.game.game.Game._save_state")
 
     game = await create_game(

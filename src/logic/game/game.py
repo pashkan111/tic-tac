@@ -4,7 +4,7 @@ from .board import BoardArray
 from .player import Player
 from .checker import CheckerArray
 from src.repo.repository_game import RepositoryGame
-from src.logic.exceptions import PlayersNotEnoughException, GameNotStartedException, MoveTurnException
+from src.logic.exceptions import PlayersNotEnoughException, GameNotStartedException, MoveTurnException, RoomNotFoundInRepoException
 import uuid
 from .schemas import GameRedisSchema, PlayerId
 import asyncio
@@ -67,6 +67,8 @@ class Game(GameAbstract):
 
     async def _update_state(self):
         game_data = await self.repo.get_game(self.room_id)
+        if not game_data:
+            raise RoomNotFoundInRepoException(room_id=self.room_id)
         self.current_move_player = game_data.current_move_player
         self.board.board = game_data.board
 
@@ -78,17 +80,13 @@ class Game(GameAbstract):
             board=self.board.board,
         )
         await asyncio.gather(
-            *[
-                self.repo.set_game(game_data),
-                self.repo.set_game_players(player_id=self.players[0].id, room_id=self.room_id),
-                self.repo.set_game_players(player_id=self.players[1].id, room_id=self.room_id),
-                self.repo.add_players_to_room(
-                    player_ids=[self.players[0].id, self.players[1].id],
-                    room_id=self.room_id,
-                ),
-                # TODO remove this from here
-                self.repo.remove_players_from_wait_list(rows_count=self.board.rows_count),
-            ]
+            self.repo.set_game(game_data),
+            self.repo.set_game_players(player_id=self.players[0].id, room_id=self.room_id),
+            self.repo.set_game_players(player_id=self.players[1].id, room_id=self.room_id),
+            self.repo.add_players_to_room(
+                player_ids=[self.players[0].id, self.players[1].id],
+                room_id=self.room_id,
+            )
         )
 
     async def start(self):
@@ -101,7 +99,10 @@ class Game(GameAbstract):
             self.current_move_player = self.players[0]
 
         self._started = True
-        await self._save_state()
+
+        await asyncio.gather(
+            self.repo.remove_players_from_wait_list(rows_count=self.board.rows_count), self._save_state()
+        )
 
     async def make_move(self, *, player_id: PlayerId, row: int, col: int) -> CheckResult:
         await self._update_state()
