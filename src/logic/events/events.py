@@ -5,10 +5,16 @@ from typing import Any
 import orjson
 
 
+"""События, которые отсылает клиент по вебсокетам"""
+
+
 class ClientEventType(StrEnum):
     START = "START"
+    """Событие начала игры. На этом этапе происходит авторизация"""
     MOVE = "MOVE"
+    """Событие хода"""
     SURRENDER = "SURRENDER"
+    """Событие сдачи"""
 
 
 @dataclass(slots=True)
@@ -32,18 +38,31 @@ class MoveEventData:
 
 
 @dataclass(slots=True)
+class SurrenderEventData:
+    """Событие сдачи"""
+
+    ...
+
+
+@dataclass(slots=True)
 class StartGameEvent(BaseEvent):
+    """Событие начала игры"""
+
     data: StartGameEventData
     event_type: ClientEventType = ClientEventType.START
 
 
 @dataclass(slots=True)
 class MoveEvent(BaseEvent):
+    """Событие хода"""
+
     data: MoveEventData
     event_type: ClientEventType = ClientEventType.MOVE
 
 
 @dataclass(slots=True)
 class SurrenderEvent(BaseEvent):
-    event_type: ClientEventType = ClientEventType.START
-    data: Any | None = None
+    """Событие сдачи"""
+
+    data: SurrenderEventData
+    event_type: ClientEventType = ClientEventType.SURRENDER

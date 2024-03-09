@@ -14,6 +14,8 @@ from src.logic.exceptions import (
 from src.logic.auth.authentication import check_user
 from src.logic.game.game import Game
 from src.logic.game.schemas import PlayerId
+from src.logic.game.player import Player
+
 
 from dataclasses import dataclass
 from typing import Any, Callable
@@ -52,6 +54,11 @@ class StartGameStateData:
 @dataclass(slots=True)
 class MadeMoveStateData:
     move_result: CheckResult
+
+
+@dataclass(slots=True)
+class SurrenderStateData:
+    winner: Player
 
 
 class GameState(StrEnum):
@@ -147,6 +154,11 @@ class SurrenderState(GameBaseState):
 
     async def run(self, data: BaseMachineRequest) -> BaseMachineResponse:
         self._validate(data)
+        return BaseMachineResponse(
+            data=SurrenderStateData(winner=next(filter(lambda p: p.id == data.player_id, data.game.players))),
+            status=MachineActionStatus.SUCCESS,
+            message=None,
+        )
 
 
 class FinishedState(GameBaseState):

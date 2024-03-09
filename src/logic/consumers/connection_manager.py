@@ -21,12 +21,9 @@ class PlayerConnectionManager:
         await self.repo.add_players_to_room(room_id=room_id, player_ids=[int(player_id)])
 
     async def disconnect(self, *, player_id: PlayerId, room_id: UUID):
-        print("--" * 100)
         del self.active_connections[player_id]
         await self.repo.remove_player_from_room(room_id=room_id, player_id=player_id)
-        r = await self.repo.get_players_from_room(room_id)
-        print("11" * 100)
-        print("99" * 100, r)
+        return await self.repo.get_players_from_room(room_id)
 
     async def send_event_to_all_players(self, *, message: BaseMessage, player_id: PlayerId, room_id: UUID):
         all_players = await self.repo.get_players_from_room(room_id)

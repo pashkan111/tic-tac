@@ -58,7 +58,7 @@ async def test_game_ws_handler__connected(pg, websocket_client, player_1, redis)
         assert response == {
             "status": "CONNECTED",
             "message": None,
-            "data": {"board": board, "current_move_player": {"id": 3, "chip": 1}},
+            "data": {"data": {"board": board, "current_move_player": {"id": 3, "chip": 1}}},
             "type": "RESPONSE",
         }
         assert await redis.get_set_values(name=f"players_by_rooms:{str(room_id)}") == {
@@ -93,7 +93,7 @@ async def test_game_ws_handler__make_moves__error(pg, websocket_client, player_1
     )
     async with websocket_client.websocket_connect(f"/game_ws/{str(room_id)}") as websocket:
         await websocket.send_text(orjson.dumps({"event_type": "START", "data": {"token": player_1.token}}))
-        _ = await websocket.receive_json()
+        await websocket.receive_json()
         await websocket.send_text(orjson.dumps({"event_type": "MOVE", "data": {"row": 0, "col": 1}}))
         move_response = await websocket.receive_json()
         assert move_response == {
@@ -110,14 +110,16 @@ async def test_game_ws_handler__make_moves__error(pg, websocket_client, player_1
             "status": "SUCCESS",
             "message": None,
             "data": {
-                "board": [
-                    [player_1.id, 0, 0, 0],
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0],
-                ],
-                "current_move_player": {"chip": 2, "id": 2},
-                "winner": None,
+                "data": {
+                    "board": [
+                        [player_1.id, 0, 0, 0],
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0],
+                        [0, 0, 0, 0],
+                    ],
+                    "current_move_player": {"chip": 2, "id": 2},
+                    "winner": None,
+                }
             },
             "type": "RESPONSE",
         }
@@ -152,11 +154,11 @@ async def test_game_ws_handler__make_moves(pg, websocket_client, websocket_clien
         async with websocket_client2.websocket_connect(f"/game_ws/{str(room_id)}") as websocket2:
             # Подключение игрока 1
             await websocket1.send_text(orjson.dumps({"event_type": "START", "data": {"token": player_1.token}}))
-            _ = await websocket1.receive_json()
+            await websocket1.receive_json()
 
             # Подключение игрока 2
             await websocket2.send_text(orjson.dumps({"event_type": "START", "data": {"token": player_2.token}}))
-            _ = await websocket2.receive_json()
+            await websocket2.receive_json()
 
             # Уведомление игрока 1 о подключении игрока 2
             message_for_player1_about_connection_player2 = await websocket1.receive_json()
@@ -173,13 +175,15 @@ async def test_game_ws_handler__make_moves(pg, websocket_client, websocket_clien
                 "status": "SUCCESS",
                 "message": None,
                 "data": {
-                    "board": [
-                        [player_1.id, 0, 0],
-                        [0, 0, 0],
-                        [0, 0, 0],
-                    ],
-                    "current_move_player": {"chip": 2, "id": 2},
-                    "winner": None,
+                    "data": {
+                        "board": [
+                            [player_1.id, 0, 0],
+                            [0, 0, 0],
+                            [0, 0, 0],
+                        ],
+                        "current_move_player": {"chip": 2, "id": 2},
+                        "winner": None,
+                    }
                 },
                 "type": "RESPONSE",
             }
@@ -223,13 +227,15 @@ async def test_game_ws_handler__make_moves(pg, websocket_client, websocket_clien
                 "status": "SUCCESS",
                 "message": None,
                 "data": {
-                    "board": [
-                        [player_1.id, 0, 0],
-                        [0, player_2.id, 0],
-                        [0, 0, 0],
-                    ],
-                    "current_move_player": {"chip": 1, "id": 1},
-                    "winner": None,
+                    "data": {
+                        "board": [
+                            [player_1.id, 0, 0],
+                            [0, player_2.id, 0],
+                            [0, 0, 0],
+                        ],
+                        "current_move_player": {"chip": 1, "id": 1},
+                        "winner": None,
+                    }
                 },
                 "type": "RESPONSE",
             }
@@ -247,17 +253,17 @@ async def test_game_ws_handler__make_moves(pg, websocket_client, websocket_clien
             }
 
             await websocket1.send_text(orjson.dumps({"event_type": "MOVE", "data": {"row": 2, "col": 1}}))
-            _ = await websocket1.receive_json()
-            _ = await websocket2.receive_json()
+            await websocket1.receive_json()
+            await websocket2.receive_json()
 
             await websocket2.send_text(orjson.dumps({"event_type": "MOVE", "data": {"row": 3, "col": 3}}))
             move_response = await websocket2.receive_json()
-            assert move_response["data"]["board"] == [
+            assert move_response["data"]["data"]["board"] == [
                 [player_1.id, 0, 0],
                 [player_1.id, player_2.id, 0],
                 [0, 0, player_2.id],
             ]
-            _ = await websocket1.receive_json()
+            await websocket1.receive_json()
 
             await websocket1.send_text(orjson.dumps({"event_type": "MOVE", "data": {"row": 3, "col": 1}}))
             move_response = await websocket1.receive_json()
@@ -265,13 +271,15 @@ async def test_game_ws_handler__make_moves(pg, websocket_client, websocket_clien
                 "status": "FINISHED",
                 "message": None,
                 "data": {
-                    "board": [
-                        [player_1.id, 0, 0],
-                        [player_1.id, player_2.id, 0],
-                        [player_1.id, 0, player_2.id],
-                    ],
-                    "current_move_player": None,
-                    "winner": {"chip": 1, "id": 1},
+                    "data": {
+                        "board": [
+                            [player_1.id, 0, 0],
+                            [player_1.id, player_2.id, 0],
+                            [player_1.id, 0, player_2.id],
+                        ],
+                        "current_move_player": None,
+                        "winner": {"chip": 1, "id": 1},
+                    }
                 },
                 "type": "RESPONSE",
             }
@@ -292,7 +300,7 @@ async def test_game_ws_handler__make_moves(pg, websocket_client, websocket_clien
                 "type": "MESSAGE",
             }
 
-            await asyncio.sleep(2)
+            await asyncio.sleep(0.5)
             assert await redis.get_set_values(name=f"players_by_rooms:{str(room_id)}") == {str(player_2.id)}
 
     disconnect_message = await websocket2.receive_json()
@@ -301,3 +309,78 @@ async def test_game_ws_handler__make_moves(pg, websocket_client, websocket_clien
         "message_status": "DISCONNECTED",
         "type": "MESSAGE",
     }
+
+
+@pytest.mark.asyncio
+async def test_game_ws_handler__surrender(pg, websocket_client, websocket_client2, player_1, player_2, redis):
+    room_id = uuid.uuid4()
+    board = [
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+    ]
+    await redis.set(
+        key=str(room_id),
+        value=orjson.dumps(
+            {
+                "room_id": str(room_id),
+                "players": [{"id": player_1.id, "chip": 1}, {"id": player_2.id, "chip": 2}],
+                "current_move_player": {"id": player_1.id, "chip": 1},
+                "board": board,
+            }
+        ),
+    )
+
+    await redis.add_to_set(
+        name=f"players_by_rooms:{str(room_id)}",
+        values=[player_1.id, player_2.id],
+    )
+
+    async with websocket_client.websocket_connect(f"/game_ws/{str(room_id)}") as websocket1:
+        async with websocket_client2.websocket_connect(f"/game_ws/{str(room_id)}") as websocket2:
+            # Подключение игрока 1
+            await websocket1.send_text(orjson.dumps({"event_type": "START", "data": {"token": player_1.token}}))
+            await websocket1.receive_json()
+
+            # Подключение игрока 2
+            await websocket2.send_text(orjson.dumps({"event_type": "START", "data": {"token": player_2.token}}))
+            await websocket2.receive_json()
+
+            # Уведомление игрока 1 о подключении игрока 2
+            await websocket1.receive_json()
+
+            # Игрок 1 делает ход
+            await websocket1.send_text(orjson.dumps({"event_type": "MOVE", "data": {"row": 1, "col": 1}}))
+            await websocket1.receive_json()
+            await websocket2.receive_json()
+
+            # Игрок 2 сдается
+            await websocket2.send_text(orjson.dumps({"event_type": "SURRENDER"}))
+            msg = await websocket2.receive_json()
+            assert msg == {
+                "data": {
+                    "data": {"winner": {"chip": 2, "id": player_2.id}},
+                },
+                "status": "SURRENDER",
+                "message": None,
+                "type": "RESPONSE",
+            }
+
+            surrender_msg = await websocket1.receive_json()
+            assert surrender_msg == {
+                "data": {
+                    "player": {"id": 2, "chip": 2},
+                    "board": [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+                    "current_move_player": {"id": 1, "chip": 1},
+                    "winner": {"id": 2, "chip": 2},
+                },
+                "message_status": "SURRENDER",
+                "type": "MESSAGE",
+            }
+
+            disconnect_message = await websocket1.receive_json()
+            assert disconnect_message == {
+                "data": {"player": {"id": player_2.id, "chip": 2}},
+                "message_status": "DISCONNECTED",
+                "type": "MESSAGE",
+            }
