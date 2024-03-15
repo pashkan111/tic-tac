@@ -4,7 +4,12 @@ from .board import BoardArray
 from .player import Player
 from .checker import CheckerArray
 from src.repo.repository_game import RepositoryGame
-from src.logic.exceptions import PlayersNotEnoughException, GameNotStartedException, MoveTurnException, RoomNotFoundInRepoException
+from src.logic.exceptions import (
+    PlayersNotEnoughException,
+    GameNotStartedException,
+    MoveTurnException,
+    RoomNotFoundInRepoException,
+)
 import uuid
 from .schemas import GameRedisSchema, PlayerId
 import asyncio
@@ -86,7 +91,7 @@ class Game(GameAbstract):
             self.repo.add_players_to_room(
                 player_ids=[self.players[0].id, self.players[1].id],
                 room_id=self.room_id,
-            )
+            ),
         )
 
     async def start(self):
@@ -114,6 +119,7 @@ class Game(GameAbstract):
         check_result = self.checker.check_win(self.board)
         self._switch_player()
         await self._save_state()
+        print(self.board.board)
         return check_result
 
     async def surrender(self, player_id: PlayerId):

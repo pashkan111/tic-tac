@@ -21,6 +21,7 @@ python-tools = {git = "https://github.com/pashkan111/python-tools"}
 websockets = "^12.0"
 requests = "^2.31.0"
 async-asgi-testclient = "^1.4.11"
+structlog = "^24.1.0"
 
 
 [build-system]

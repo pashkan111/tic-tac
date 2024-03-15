@@ -7,6 +7,8 @@ from src.presentation.entities.auth_entities import (
     CheckTokenRequest,
     CheckTokenResponse,
 )
+from fastapi.exceptions import HTTPException
+
 from src.logic.auth.authentication import register_user, login_user, check_user
 
 user_router = APIRouter(prefix="/auth")
@@ -26,5 +28,8 @@ async def login_user_handler(data: LoginUserRequest):
 
 @user_router.post("/check_token", response_model=CheckTokenResponse)
 async def check_token_handler(data: CheckTokenRequest):
-    user_id = await check_user(token=data.token)
+    try:
+        user_id = await check_user(token=data.token)
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=str(e))
     return CheckTokenResponse(user_id=user_id)

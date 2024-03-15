@@ -11,6 +11,10 @@ from src.logic.exceptions import (
     AbstractException,
 )
 from .schemas import GameRedisSchema
+from logging import getLogger
+
+
+logger = getLogger(__name__)
 
 
 def _make_game(game_data: GameRedisSchema) -> Game:
@@ -60,8 +64,11 @@ async def create_game(
                 game = _make_game(game_data)
                 await game.start()
                 return game
-            # Player has active game but game does not exist
-            # Inconsistent database. Raise exception and TODO write to log
+            logger.error(
+                "Player has active game but game does not exist. Player_id: %s, existing_game_id: %s",
+                player_id,
+                existing_game_id,
+            )
             raise AbstractException()
 
         partner = await repo.check_players_in_wait_list(rows_count)
