@@ -1,5 +1,6 @@
 from fastapi import APIRouter, exceptions
 from src.presentation.entities.game_entities import GameStartRequest, GameStartResponse
+from src.presentation.entities.get_chips import GetChipsResponse, Chip
 from src.logic.game.main import create_game
 from src.logic.auth.authentication import check_user
 from src.logic.exceptions import (
@@ -7,7 +8,7 @@ from src.logic.exceptions import (
     RoomNotFoundInRepoException,
     PlayersNotEnoughException,
 )
-
+from src.logic.game.schemas import Chips
 
 game_router = APIRouter(prefix="/game")
 
@@ -34,3 +35,8 @@ async def create_game_handler(data: GameStartRequest):
         room_id=game.room_id,
         added_to_queue=False,
     )
+
+
+@game_router.get("/chips", response_model=GetChipsResponse)
+async def get_chips():
+    return GetChipsResponse(chips=[Chip(id=chip.value, chip=chip.name) for chip in Chips])

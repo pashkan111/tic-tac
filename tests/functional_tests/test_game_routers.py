@@ -4,6 +4,19 @@ import uuid
 
 
 @pytest.mark.asyncio
+async def test_get_chips(pg, test_client):
+    response = await test_client.get("/game/chips")
+    response = response.json()
+
+    assert response == {
+        "chips": [
+            {"id": 1, "chip": "X"},
+            {"id": 2, "chip": "O"},
+        ]
+    }
+
+
+@pytest.mark.asyncio
 async def test_create_game_handler__wrong_token(pg, test_client, redis):
     await redis.hset(name="players_waiting_list", key="5", value="3")
 
