@@ -19,6 +19,12 @@ async def test_login_user(pg, test_client):
 
 
 @pytest.mark.asyncio
+async def test_login_user__incorrect_password(pg, test_client, player_1):
+    response = await test_client.post("/auth/login", json={"username": "pashkan", "password": "2222"})
+    assert response.json() == {"detail": "Invalid Password"}
+
+
+@pytest.mark.asyncio
 async def test_check_token(pg, test_client, player_1):
     response = await test_client.post("/auth/check_token", json={"token": player_1.token})
     assert response.json() == {"user_id": player_1.id}

@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  test_db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${TEST_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${TEST_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${TEST_POSTGRES_DB}
+    volumes:
+      - ./volumes/postgresql/pg-data:/var/lib/postgresql/data
+    ports:
+      - ${TEST_POSTGRES_PORT}:5432
+
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=${TEST_REDIS_PASSWORD}
+      - REDIS_PORT=${TEST_REDIS_PORT}
+
+
+volumes:
+  tic_tac:

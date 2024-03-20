@@ -66,7 +66,15 @@ class UserNotFoundException(AbstractException):
 
 
 class UserInvalidCredsException(AbstractException):
-    message = "Invalid Credentials. Username: {username}"
+    message = "User with username {username} does not exist"
+
+
+class UserInvalidPasswordException(AbstractException):
+    message = "Invalid Password"
+
+
+class UsernameAlreadyExistsException(AbstractException):
+    message = "User with such username already exists. Username: {username}"
 
 
 class MoveTurnException(AbstractException):

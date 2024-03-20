@@ -49,6 +49,7 @@ async def test_create_game_handler__partner_not_in_waiting_list(pg, test_client,
 
     assert await redis.hget(name="players_waiting_list", key="5") == "1"
     assert response["game_started"] is False
+    assert response["added_to_queue"] is True
 
 
 @pytest.mark.asyncio
@@ -76,4 +77,5 @@ async def test_create_game_handler__thereis_a_game_with_such_player(pg, test_cli
 
     response = response.json()
     assert response["game_started"] is True
+    assert response["added_to_queue"] is False
     assert response["room_id"] == str(room_id)

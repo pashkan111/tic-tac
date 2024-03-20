@@ -24,12 +24,13 @@ async def create_game_handler(data: GameStartRequest):
     except (RoomNotFoundInRepoException, NotEnoughArgsException) as exc:
         raise exceptions.HTTPException(status_code=400, detail=exc.message)
     except PlayersNotEnoughException:
-        return GameStartResponse(game_started=False, room_id=None, partner_id=None)
-    except Exception:
-        return GameStartResponse(game_started=False, room_id=None, partner_id=None)
+        return GameStartResponse(game_started=False, room_id=None, partner_id=None, added_to_queue=True)
+    except Exception as exc:
+        raise exceptions.HTTPException(status_code=500, detail=exc)
 
     return GameStartResponse(
         game_started=True,
         partner_id=[player.id for player in game.players if player.id != user_id][0],
         room_id=game.room_id,
+        added_to_queue=False,
     )
