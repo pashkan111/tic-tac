@@ -6,7 +6,7 @@ from .checker import CheckerArray
 from src.repo.repository_game import RepositoryGame
 from src.logic.exceptions import (
     PlayersNotEnoughException,
-    GameNotStartedException,
+    GameNotActiveException,
     MoveTurnException,
     RoomNotFoundInRepoException,
 )
@@ -16,21 +16,13 @@ import asyncio
 
 
 class Game(GameAbstract):
-    __slots__ = (
-        "room_id",
-        "players",
-        "repo",
-        "board",
-        "checker",
-        "current_move_player",
-    )
     room_id: uuid.UUID
     players: list[Player]
     repo: RepositoryGame
     board: BoardArray
     checker: CheckerArray
     current_move_player: Player
-    _started: bool = False
+    is_active: bool
 
     def __init__(
         self,
@@ -47,6 +39,7 @@ class Game(GameAbstract):
         self.players = players
         self.room_id = room_id or uuid.uuid4()
         self.current_move_player = current_move_player
+        self.is_active = False
 
     def _switch_player(self) -> None:
         self.current_move_player = list(filter(lambda player: player.id != self.current_move_player.id, self.players))[
@@ -76,6 +69,7 @@ class Game(GameAbstract):
             raise RoomNotFoundInRepoException(room_id=self.room_id)
         self.current_move_player = game_data.current_move_player
         self.board.board = game_data.board
+        self.is_active = game_data.is_active
 
     async def _save_state(self) -> None:
         game_data = GameRedisSchema(
@@ -83,6 +77,7 @@ class Game(GameAbstract):
             players=self.players,
             current_move_player=self.current_move_player,
             board=self.board.board,
+            is_active=self.is_active,
         )
         await asyncio.gather(
             self.repo.set_game(game_data),
@@ -103,7 +98,7 @@ class Game(GameAbstract):
         if self.current_move_player is None:
             self.current_move_player = self.players[0]
 
-        self._started = True
+        self.is_active = True
 
         await asyncio.gather(
             self.repo.remove_players_from_wait_list(rows_count=self.board.rows_count), self._save_state()
@@ -111,16 +106,17 @@ class Game(GameAbstract):
 
     async def make_move(self, *, player_id: PlayerId, row: int, col: int) -> CheckResult:
         await self._update_state()
-        if self._started is False:
-            raise GameNotStartedException(room_id=self.room_id)
+        if not self.is_active:
+            raise GameNotActiveException(room_id=self.room_id)
 
         self._check_player_move(player_id)
         self.board.make_move(player=self.current_move_player, row=row, col=col)
         check_result = self.checker.check_win(self.board)
         self._switch_player()
         await self._save_state()
-        print(self.board.board)
         return check_result
 
     async def surrender(self, player_id: PlayerId):
+        self.is_active = False
         await self._update_state()
+        # TODO save to postgres database

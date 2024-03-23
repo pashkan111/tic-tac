@@ -23,8 +23,8 @@ class PlayersNotEnoughException(AbstractException):
     message = "Players Not Enough. Room id: {room_id}"
 
 
-class GameNotStartedException(AbstractException):
-    message = "Game not started. Call start() func. Room id: {room_id}"
+class GameNotActiveException(AbstractException):
+    message = "Game is not active. Room id: {room_id}"
 
 
 class NotEnoughArgsException(AbstractException):
@@ -81,5 +81,5 @@ class MoveTurnException(AbstractException):
     message = "Others players turn to move. Player id: {player_id}"
 
 
-class StateValidationExceptions(AbstractException):
+class StateValidationException(AbstractException):
     message = "Wrong event type. Event type: {event_type}, expecting: {expecting_event_type}"

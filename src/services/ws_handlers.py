@@ -41,7 +41,7 @@ async def handle_surrender_state(*, websocket: WebSocket, game: Game, player: Pl
                     player=player,
                     board=game.board.board,
                     winner=winner,
-                    current_move_player=game.current_move_player,
+                    current_move_player=None,
                 ),
                 message_status=MessageStatus.SURRENDER,
             ),

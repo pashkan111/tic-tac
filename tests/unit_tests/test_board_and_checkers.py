@@ -4,7 +4,7 @@ from src.logic.game.board import BoardArray
 from src.logic.game.player import Player
 from settings import MAX_ROWS, MIN_ROWS
 import pytest
-from src.logic.exceptions import RowsNumberException
+from src.logic.exceptions import RowsNumberException, MakeMoveException
 
 
 def test_board_created():
@@ -118,3 +118,20 @@ def test_create_board__with_board():
     ]
     board = BoardArray(board=current_board)
     assert board.board == current_board
+
+
+def test_make_moves(player1_fixture):
+    board = BoardArray(rows_count=5)
+    board.make_move(player=player1_fixture, row=1, col=1)
+
+    with pytest.raises(MakeMoveException):
+        board.make_move(player=player1_fixture, row="1", col=2)
+    with pytest.raises(MakeMoveException):
+        board.make_move(player=player1_fixture, row=2, col="t")
+    with pytest.raises(MakeMoveException):
+        board.make_move(player=player1_fixture, row=2, col="4")
+    with pytest.raises(MakeMoveException):
+        board.make_move(player=player1_fixture, row=2, col="4")
+
+    with pytest.raises(MakeMoveException):
+        board.make_move(player=player1_fixture, row=1, col=1)

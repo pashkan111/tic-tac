@@ -49,6 +49,7 @@ async def test_game_ws_handler__connected(pg, websocket_client, player_1, redis)
                 "players": [{"id": first_player_id, "chip": 1}, {"id": player_1.id, "chip": 2}],
                 "current_move_player": {"id": 3, "chip": 1},
                 "board": board,
+                "is_active": True,
             }
         ),
     )
@@ -88,6 +89,7 @@ async def test_game_ws_handler__make_moves__error(pg, websocket_client, player_1
                 "players": [{"id": player_1.id, "chip": 1}, {"id": player_2.id, "chip": 2}],
                 "current_move_player": {"id": player_1.id, "chip": 1},
                 "board": board,
+                "is_active": True,
             }
         ),
     )
@@ -141,6 +143,7 @@ async def test_game_ws_handler__make_moves(pg, websocket_client, websocket_clien
                 "players": [{"id": player_1.id, "chip": 1}, {"id": player_2.id, "chip": 2}],
                 "current_move_player": {"id": player_1.id, "chip": 1},
                 "board": board,
+                "is_active": True,
             }
         ),
     )
@@ -327,6 +330,7 @@ async def test_game_ws_handler__surrender(pg, websocket_client, websocket_client
                 "players": [{"id": player_1.id, "chip": 1}, {"id": player_2.id, "chip": 2}],
                 "current_move_player": {"id": player_1.id, "chip": 1},
                 "board": board,
+                "is_active": True,
             }
         ),
     )
@@ -370,8 +374,8 @@ async def test_game_ws_handler__surrender(pg, websocket_client, websocket_client
             assert surrender_msg == {
                 "data": {
                     "player": {"id": 2, "chip": 2},
-                    "board": [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-                    "current_move_player": {"id": 1, "chip": 1},
+                    "board": [[1, 0, 0], [0, 0, 0], [0, 0, 0]],
+                    "current_move_player": None,
                     "winner": {"id": 2, "chip": 2},
                 },
                 "message_status": "SURRENDER",

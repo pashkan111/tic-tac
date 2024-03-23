@@ -45,13 +45,6 @@ class RepositoryGameAbstract(abc.ABC):
 
 
 class GameAbstract(abc.ABC):
-    room_id: uuid.UUID
-    players: list[PlayerAbstract]
-    repo: RepositoryGameAbstract
-    board: BoardAbstract
-    checker: CheckerAbstract
-    next_move: PlayerAbstract
-
     @abc.abstractmethod
     async def start(self):
         ...

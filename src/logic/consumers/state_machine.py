@@ -6,7 +6,7 @@
 """
 from src.logic.events.events import MoveEventData, StartGameEventData, BaseEvent, ClientEventType
 from src.logic.exceptions import (
-    StateValidationExceptions,
+    StateValidationException,
     RoomNotFoundInRepoException,
     UserNotFoundException,
     InvalidTokenException,
@@ -90,7 +90,7 @@ class GameBaseState:
 
     def _validate(self, data: BaseMachineRequest) -> None:
         if data.event.event_type != self.client_type:
-            raise StateValidationExceptions(event_type=data.event.event_type, expecting_event_type=self.client_type)
+            raise StateValidationException(event_type=data.event.event_type, expecting_event_type=self.client_type)
 
     async def run(self, data: BaseMachineRequest) -> BaseMachineResponse:
         ...
@@ -154,6 +154,7 @@ class SurrenderState(GameBaseState):
 
     async def run(self, data: BaseMachineRequest) -> BaseMachineResponse:
         self._validate(data)
+        await data.game.surrender(player_id=data.player_id)
         return BaseMachineResponse(
             data=SurrenderStateData(winner=next(filter(lambda p: p.id == data.player_id, data.game.players))),
             status=MachineActionStatus.SUCCESS,
@@ -191,17 +192,17 @@ class GameStateMachine:
 
     def _move_state(self):
         if not GameState.MOVE_STATE in self.current_state.next_states:
-            raise StateValidationExceptions
+            raise StateValidationException
         self.current_state = MoveState()
 
     def _surrender_state(self):
         if not GameState.SURRENDER_STATE in self.current_state.next_states:
-            raise StateValidationExceptions
+            raise StateValidationException
         self.current_state = SurrenderState()
 
     def _finished_state(self):
         if not GameState.FINISHED_STATE in self.current_state.next_states:
-            raise StateValidationExceptions
+            raise StateValidationException
         self.current_state = FinishedState()
 
 

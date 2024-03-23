@@ -28,8 +28,10 @@ class BoardArray(BoardAbstract):
         for line_num, line in enumerate(self.board, start=1):
             if not line_num == row:
                 continue
-            for num, _ in enumerate(line, start=1):
-                if num == col:
-                    line[num - 1] = player.chip.value
-                    return
+            for col_num, _ in enumerate(line, start=1):
+                if col_num == col:
+                    cell = line[col_num - 1]
+                    if cell == 0:
+                        line[col_num - 1] = player.chip.value
+                        return
         raise MakeMoveException(row=row, col=col)

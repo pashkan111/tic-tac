@@ -49,6 +49,7 @@ class GameRedisSchema:
     players: list["Player"]
     current_move_player: "Player"
     board: "Board"
+    is_active: bool
     created: datetime = datetime.now()
 
 

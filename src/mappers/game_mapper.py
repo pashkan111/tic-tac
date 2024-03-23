@@ -11,6 +11,7 @@ def map_game_data_from_redis(data: dict[str, Any]) -> GameRedisSchema:
     return GameRedisSchema(
         room_id=data["room_id"],
         board=data["board"],
+        is_active=data["is_active"],
         current_move_player=map_player(
             player_id=data["current_move_player"]["id"],
             chip=Chips(data["current_move_player"]["chip"]),

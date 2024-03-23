@@ -1,10 +1,12 @@
 from src.logic.interfaces import Chips
 from src.logic.game.game import Game
-from src.logic.exceptions import PlayersNotEnoughException, GameNotStartedException
+from src.logic.exceptions import PlayersNotEnoughException, GameNotActiveException
 import pytest
 import uuid
 from unittest.mock import patch
 from unittest.mock import AsyncMock
+from src.logic.game.schemas import GameRedisSchema
+from asyncio import Future
 
 
 @pytest.mark.asyncio
@@ -26,7 +28,14 @@ async def test_game_created(player1_fixture, player2_fixture, board_fixture, rep
 async def test_make_move__game_not_started(
     player1_fixture, player2_fixture, board_fixture, repo_fixture, checker_fixture, mocker
 ):
-    repo_fixture.get_game.return_value = AsyncMock()
+    repo_fixture.get_game.return_value = GameRedisSchema(
+        room_id=uuid.uuid4(),
+        is_active=False,
+        players=[player1_fixture, player2_fixture],
+        current_move_player=player1_fixture,
+        board=board_fixture.board,
+    )
+
     game = Game(
         repo=repo_fixture,
         board=board_fixture,
@@ -34,7 +43,7 @@ async def test_make_move__game_not_started(
         checker=checker_fixture,
     )
 
-    with pytest.raises(GameNotStartedException) as exc:
+    with pytest.raises(GameNotActiveException) as exc:
         await game.make_move(player_id=player1_fixture.id, row=2, col=3)
         assert str(game.room_id) in str(exc)
 
