@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: ${TEST_POSTGRES_PASSWORD}
       POSTGRES_DB: ${TEST_POSTGRES_DB}
     volumes:
-      - ./volumes/postgresql/pg-data:/var/lib/postgresql/data
+      - ./volumes/postgresql_test/pg-data:/var/lib/postgresql/data
     ports:
       - ${TEST_POSTGRES_PORT}:5432
 

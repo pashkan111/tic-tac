@@ -74,7 +74,7 @@ class RepositoryGame(RepositoryGameAbstract):
             value=str(room_id),
         )
 
-    async def get_game_players(self, player_id: int) -> UUID | None:
+    async def get_player_active_game(self, player_id: int) -> UUID | None:
         """Проверяет, есть ли у пользователя незаконченная игра"""
         room_id = await self.redis_client.get().hget(name=settings.REDIS_ACTIVE_PLAYERS, key=str(player_id))
         return room_id

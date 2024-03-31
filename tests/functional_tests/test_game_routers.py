@@ -94,3 +94,17 @@ async def test_create_game_handler__thereis_a_game_with_such_player(pg, test_cli
     assert response["game_started"] is True
     assert response["added_to_queue"] is False
     assert response["room_id"] == str(room_id)
+
+
+@pytest.mark.asyncio
+async def test_create_game_handler__2_requests_to_start_game(pg, test_client, redis, player_1):
+    response1 = await test_client.post("/game/create", json={"rows_count": "5", "token": player_1.token})
+    response1 = response1.json()
+
+    assert response1["game_started"] is False
+    assert response1["added_to_queue"] is True
+
+    response2 = await test_client.post("/game/create", json={"rows_count": "5", "token": player_1.token})
+    response2 = response2.json()
+    assert response2["game_started"] is False
+    assert response2["added_to_queue"] is True

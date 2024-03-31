@@ -5,7 +5,7 @@ import asyncio
 from src.logic.consumers.connection_manager import connection_manager
 from src.mappers.event_mappers import map_event_from_client
 from src.presentation.entities.ws_game_entities import GameStartResponse, ResponseStatus
-from src.logic.exceptions import BadParamsException
+from src.logic.exceptions import BadEventParamsException
 from src.logic.events.responses import (
     StartGameResponseEvent,
     StartGameData,
@@ -25,7 +25,10 @@ from src.logic.consumers.state_machine import (
     GameState,
 )
 from src.services.ws_handlers import handle_move_state, handle_surrender_state
+import logging
 
+
+logger = logging.getLogger(__name__)
 ws_game_router = APIRouter(prefix="/game_ws")
 
 
@@ -35,7 +38,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
     data = await websocket.receive_text()
     try:
         request_event = map_event_from_client(data)
-    except BadParamsException as e:
+    except BadEventParamsException as e:
         await websocket.send_bytes(
             GameStartResponse(status=ResponseStatus.ERROR, message=e.message, data=None).to_json()
         )
@@ -88,7 +91,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
             data = await websocket.receive_text()
             try:
                 request_event = map_event_from_client(data)
-            except BadParamsException as e:
+            except BadEventParamsException as e:
                 await websocket.send_bytes(
                     GameStartResponse(status=ResponseStatus.ERROR, message=e.message, data=None).to_json()
                 )
@@ -137,7 +140,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                 return
 
     except Exception as e:
-        print(e)
+        logger.error(f"Exception. Type: {type(e)}. Message: {str(e)}")
     finally:
         await connection_manager.disconnect(room_id=room_id, player_id=player_id)
         await connection_manager.send_event_to_all_players(

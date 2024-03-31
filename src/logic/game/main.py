@@ -8,7 +8,8 @@ from src.logic.exceptions import (
     NotEnoughArgsException,
     RoomNotFoundInRepoException,
     PlayersNotEnoughException,
-    AbstractException,
+    PlayersAlreadyInWaitingListException,
+    ServerException,
 )
 from .schemas import GameRedisSchema
 from logging import getLogger
@@ -56,7 +57,7 @@ async def create_game(
 ) -> Game:
     if player_id and rows_count:
         # Check if player has active games
-        existing_game_id = await repo.get_game_players(player_id)
+        existing_game_id = await repo.get_player_active_game(player_id)
 
         if existing_game_id:
             game_data = await repo.get_game(existing_game_id)
@@ -64,14 +65,17 @@ async def create_game(
                 game = _make_game(game_data)
                 await game.start()
                 return game
-            logger.error(
-                "Player has active game but game does not exist. Player_id: %s, existing_game_id: %s",
-                player_id,
-                existing_game_id,
+
+            error_msg = (
+                f"Player has active game but game does not exist. Player_id: {player_id}, existing_game_id: {room_id}"
             )
-            raise AbstractException()
+            logger.error(error_msg)
+            raise ServerException(message=error_msg)
 
         partner = await repo.check_players_in_wait_list(rows_count)
+        if partner and partner.id == int(player_id):
+            raise PlayersAlreadyInWaitingListException(rows_count=rows_count)
+
         new_player = Player(id=player_id, chip=None)
         if not partner:
             await repo.set_players_to_wait_list(player=new_player, rows_count=rows_count)

@@ -5,14 +5,14 @@ import asyncio
 
 
 @pytest.mark.asyncio
-async def test_game_ws_handler__bad_message(websocket_client, pg):
+async def test_game_ws_handler__bad_message(websocket_client):
     room_id = uuid.uuid4()
     async with websocket_client.websocket_connect(f"/game_ws/{str(room_id)}") as websocket:
         await websocket.send_text('{"message": "Hello, WebSocket!"}')
         response = await websocket.receive_json()
         assert response == {
             "status": "ERROR",
-            "message": "Bad Params. Params: message=Hello, WebSocket!;",
+            "message": 'Bad Params. Current params: ["message"]. Needed params: ["event_type"]',
             "data": None,
             "type": "RESPONSE",
         }

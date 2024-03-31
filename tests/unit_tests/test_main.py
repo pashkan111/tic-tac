@@ -5,9 +5,11 @@ import uuid
 from src.logic.exceptions import (
     NotEnoughArgsException,
     RoomNotFoundInRepoException,
+    PlayersAlreadyInWaitingListException,
+    ServerException,
 )
 from src.logic.game.schemas import GameRedisSchema
-from src.logic.game.game import Game
+from src.logic.game.game import Game, Player
 
 
 @pytest.mark.asyncio
@@ -60,7 +62,7 @@ async def test_create_game__enough_args(
     repo_check_players_in_wait_list_mocked = mocker.patch("src.logic.game.main.repo.check_players_in_wait_list")
     repo_check_players_in_wait_list_mocked.configure_mock(return_value=player1_fixture)
 
-    repo_get_game_players_mocked = mocker.patch("src.logic.game.main.repo.get_game_players")
+    repo_get_game_players_mocked = mocker.patch("src.logic.game.main.repo.get_player_active_game")
     repo_get_game_players_mocked.configure_mock(return_value=None)
 
     mocker.patch("src.logic.game.main.repo.add_players_to_room")
@@ -90,21 +92,50 @@ async def test_create_game__enough_args__room_not_in_repo(
 
 
 @pytest.mark.asyncio
-async def test_create_game__enough_args__room_not_in_repo__game_created(
+async def test_create_game__enough_args__player_exist_in_repo(
     mocker,
-    player1_fixture,
+    player1_fixture: Player,
 ):
     repo_get_game_mocked = mocker.patch("src.logic.game.main.repo.get_game")
     repo_get_game_mocked.configure_mock(return_value=None)
 
     repo_check_players_in_wait_list_mocked = mocker.patch("src.logic.game.main.repo.check_players_in_wait_list")
     repo_check_players_in_wait_list_mocked.configure_mock(return_value=player1_fixture)
-    game = await create_game(
-        player_id=player1_fixture,
-        rows_count=10,
-        room_id=uuid.uuid4(),
+    with pytest.raises(PlayersAlreadyInWaitingListException):
+        await create_game(
+            player_id=player1_fixture.id,
+            rows_count=10,
+            room_id=uuid.uuid4(),
+        )
+
+
+@pytest.mark.asyncio
+async def test_create_game__enough_args__room_not_in_repo__game_not_created(
+    mocker,
+    player1_fixture: Player,
+    player2_fixture: Player,
+):
+    room_id = uuid.uuid4()
+
+    repo_get_game_mocked = mocker.patch("src.logic.game.main.repo.get_player_active_game")
+    repo_get_game_mocked.configure_mock(return_value=room_id)
+
+    repo_get_game_mocked = mocker.patch("src.logic.game.main.repo.get_game")
+    repo_get_game_mocked.configure_mock(return_value=None)
+
+    repo_check_players_in_wait_list_mocked = mocker.patch("src.logic.game.main.repo.check_players_in_wait_list")
+    repo_check_players_in_wait_list_mocked.configure_mock(return_value=player2_fixture)
+
+    with pytest.raises(ServerException) as e:
+        await create_game(
+            player_id=player1_fixture.id,
+            rows_count=10,
+            room_id=room_id,
+        )
+    assert (
+        e.value.message
+        == f"Server Exception. Player has active game but game does not exist. Player_id: {player1_fixture.id}, existing_game_id: {str(room_id)}"
     )
-    assert isinstance(game, Game)
 
 
 @pytest.mark.asyncio
@@ -121,7 +152,7 @@ async def test_create_game__game_not_in_repo(
     repo_check_players_in_wait_list_mocked = mocker.patch("src.logic.game.main.repo.check_players_in_wait_list")
     repo_check_players_in_wait_list_mocked.configure_mock(return_value=player1_fixture)
 
-    repo_get_game_players_mocked = mocker.patch("src.logic.game.main.repo.get_game_players")
+    repo_get_game_players_mocked = mocker.patch("src.logic.game.main.repo.get_player_active_game")
     repo_get_game_players_mocked.configure_mock(return_value=None)
 
     repo_add_players_to_room_mocked = mocker.patch("src.logic.game.main.repo.add_players_to_room")
