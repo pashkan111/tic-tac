@@ -12,3 +12,8 @@ class GameStartResponse(pd.BaseModel):
     added_to_queue: bool
     partner_id: int | None
     room_id: uuid.UUID | None
+
+
+class PlayerDeleteFromWaitingRequest(pd.BaseModel):
+    rows_count: int
+    player_id: int
