@@ -17,3 +17,7 @@ class GameStartResponse(pd.BaseModel):
 class PlayerDeleteFromWaitingRequest(pd.BaseModel):
     rows_count: int
     player_id: int
+
+
+class PlayerDeleteFromWaitingResponse(pd.BaseModel):
+    deleted: bool

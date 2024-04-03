@@ -1,5 +1,5 @@
 from fastapi import APIRouter, exceptions, status
-from src.presentation.entities.game_entities import GameStartRequest, GameStartResponse, PlayerDeleteFromWaitingRequest
+from src.presentation.entities.game_entities import GameStartRequest, GameStartResponse, PlayerDeleteFromWaitingRequest,PlayerDeleteFromWaitingResponse
 from src.presentation.entities.get_chips import GetChipsResponse, Chip
 from src.logic.game.main import create_game
 from src.logic.auth.authentication import check_user
@@ -44,6 +44,7 @@ async def get_chips_handler():
     return GetChipsResponse(chips=[Chip(id=chip.value, chip=chip.name) for chip in Chips])
 
 
-@game_router.post("/delete-player-from-waiting-list", status_code=status.HTTP_200_OK)
+@game_router.post("/delete-player-from-waiting-list", status_code=status.HTTP_200_OK, response_model=PlayerDeleteFromWaitingResponse)
 async def delete_player_from_waiting_list_handler(data: PlayerDeleteFromWaitingRequest):
-    await delete_player_from_waiting_list(data.rows_count)
+    deleted = await delete_player_from_waiting_list(data.rows_count)
+    return PlayerDeleteFromWaitingResponse(deleted=deleted)

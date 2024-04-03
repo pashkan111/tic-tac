@@ -81,8 +81,6 @@ def get_game_state(client_state: ClientEventType) -> GameState:
 
 
 # GAME
-
-
 class GameBaseState:
     client_type: ClientEventType | None
     state_name: GameState
@@ -111,7 +109,11 @@ class StartState(GameBaseState):
     next_states = [GameState.MOVE_STATE, GameState.SURRENDER_STATE, GameState.FINISHED_STATE]
 
     async def run(self, data: BaseMachineRequest) -> BaseMachineResponse:
-        self._validate(data)
+        try:
+            self._validate(data)
+        except StateValidationException as e:
+            return BaseMachineResponse(data=None, status=MachineActionStatus.FAILED, message=str(e))
+  
         event: StartGameEventData = data.event.data
         try:
             player_id = await check_user(event.token)
@@ -135,7 +137,11 @@ class MoveState(GameBaseState):
     next_states = [GameState.FINISHED_STATE, GameState.SURRENDER_STATE]
 
     async def run(self, data: BaseMachineRequest) -> BaseMachineResponse:
-        self._validate(data)
+        try:
+            self._validate(data)
+        except StateValidationException as e:
+            return BaseMachineResponse(data=None, status=MachineActionStatus.FAILED, message=str(e))
+  
         event: MoveEventData = data.event.data
         try:
             move_result = await data.game.make_move(col=event.col, row=event.row, player_id=data.player_id)
@@ -153,7 +159,11 @@ class SurrenderState(GameBaseState):
     next_states = []
 
     async def run(self, data: BaseMachineRequest) -> BaseMachineResponse:
-        self._validate(data)
+        try:
+            self._validate(data)
+        except StateValidationException as e:
+            return BaseMachineResponse(data=None, status=MachineActionStatus.FAILED, message=str(e))
+  
         await data.game.surrender(player_id=data.player_id)
         return BaseMachineResponse(
             data=SurrenderStateData(winner=next(filter(lambda p: p.id == data.player_id, data.game.players))),

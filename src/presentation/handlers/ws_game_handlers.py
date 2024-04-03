@@ -52,6 +52,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
         await websocket.send_bytes(
             GameStartResponse(status=ResponseStatus.ERROR, message=handled_event_response.message, data=None).to_json()
         )
+        await websocket.close()
         return
 
     state_data: StartGameStateData = handled_event_response.data

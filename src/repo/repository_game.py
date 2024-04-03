@@ -42,11 +42,12 @@ class RepositoryGame(RepositoryGameAbstract):
             value=str(player.id),
         )
 
-    async def remove_players_from_wait_list(self, rows_count: int):
-        await self.redis_client.get().hdel(
+    async def remove_players_from_wait_list(self, rows_count: int) -> bool:
+        is_deleted = await self.redis_client.get().hdel(
             name=settings.REDIS_PLAYERS_WAITING_LIST_NAME,
             keys=[str(rows_count)],
         )
+        return bool(is_deleted)
 
     async def add_players_to_room(self, *, player_ids: list[int], room_id: UUID) -> None:
         await self.redis_client.get().add_to_set(
