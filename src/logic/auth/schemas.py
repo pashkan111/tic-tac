@@ -1,5 +1,6 @@
 from typing import TypeAlias
 from dataclasses import dataclass
+import datetime
 
 
 UserId: TypeAlias = int
@@ -9,6 +10,7 @@ Token: TypeAlias = str
 @dataclass(slots=True, frozen=True)
 class PayloadData:
     user_id: UserId
+    created_at: datetime.datetime
 
 
 @dataclass(slots=True, frozen=True)

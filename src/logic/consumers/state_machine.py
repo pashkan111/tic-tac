@@ -10,6 +10,7 @@ from src.logic.exceptions import (
     RoomNotFoundInRepoException,
     UserNotFoundException,
     InvalidTokenException,
+    TokenExpiredException,
 )
 from src.logic.auth.authentication import check_user
 from src.logic.game.game import Game
@@ -113,11 +114,11 @@ class StartState(GameBaseState):
             self._validate(data)
         except StateValidationException as e:
             return BaseMachineResponse(data=None, status=MachineActionStatus.FAILED, message=str(e))
-  
+
         event: StartGameEventData = data.event.data
         try:
             player_id = await check_user(event.token)
-        except (InvalidTokenException, UserNotFoundException) as e:
+        except (InvalidTokenException, UserNotFoundException, TokenExpiredException) as e:
             return BaseMachineResponse(data=None, status=MachineActionStatus.FAILED, message=str(e))
 
         try:
@@ -141,7 +142,7 @@ class MoveState(GameBaseState):
             self._validate(data)
         except StateValidationException as e:
             return BaseMachineResponse(data=None, status=MachineActionStatus.FAILED, message=str(e))
-  
+
         event: MoveEventData = data.event.data
         try:
             move_result = await data.game.make_move(col=event.col, row=event.row, player_id=data.player_id)
@@ -163,7 +164,7 @@ class SurrenderState(GameBaseState):
             self._validate(data)
         except StateValidationException as e:
             return BaseMachineResponse(data=None, status=MachineActionStatus.FAILED, message=str(e))
-  
+
         await data.game.surrender(player_id=data.player_id)
         return BaseMachineResponse(
             data=SurrenderStateData(winner=next(filter(lambda p: p.id == data.player_id, data.game.players))),

@@ -75,6 +75,10 @@ class InvalidTokenException(AbstractException):
     message = "Invalid Token. Token: {token}"
 
 
+class TokenExpiredException(AbstractException):
+    message = "Token Expired"
+
+
 class UserNotFoundException(AbstractException):
     message = "User Not Found. User id: {user_id}"
 

@@ -37,8 +37,13 @@ async def test_state_machine(mocker, repo_fixture, board_fixture, player1_fixtur
     state_machine.change_state(GameState.START_STATE)
 
     move_event = MoveEvent(event_type=ClientEventType.MOVE, data=MoveEventData(row=1, col=1))
-    with pytest.raises(StateValidationException):
-        await state_machine.handle_event(BaseMachineRequest(event=move_event, room_id=game.room_id))
+    assert await state_machine.handle_event(
+        BaseMachineRequest(event=move_event, room_id=game.room_id)
+    ) == BaseMachineResponse(
+        data=None,
+        status=MachineActionStatus.FAILED,
+        message="Wrong event type. Event type: MOVE, expecting: START",
+    )
 
     assert type(state_machine.current_state) == StartState
 

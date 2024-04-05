@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import os
+from datetime import timedelta
 
 
 load_dotenv()
@@ -8,6 +9,7 @@ MAX_ROWS = 30
 MIN_ROWS = 3
 
 SECRET = "UHUIOB665BBB6537b37igs67t"
+TOKEN_LIFETIME = timedelta(days=1)
 
 
 POSTGRES_CONNECTION_STRING = (

@@ -1,4 +1,4 @@
-from settings import SECRET
+from settings import SECRET, TOKEN_LIFETIME
 from .schemas import Token, UserId, UserLoginData
 from .utils import check_password, get_password_hash, create_token, check_token
 from src.repo.repository_common import repo
@@ -27,6 +27,6 @@ async def login_user(*, username: str, password: str) -> UserLoginData:
 
 
 async def check_user(token: Token) -> UserId:
-    user_id = check_token(token=token, secret=SECRET)
+    user_id = check_token(token=token, secret=SECRET, token_lifetime=TOKEN_LIFETIME)
     user = await repo.get_user_by_id(user_id)
     return user.user_id

@@ -113,11 +113,15 @@ async def test_create_game_handler__2_requests_to_start_game(pg, test_client, re
 @pytest.mark.asyncio
 async def test_delete_player_from_waiting_list(pg, test_client, redis, player_1):
     await redis.hset(name="players_waiting_list", key="5", value="3")
-    
-    response = await test_client.post("/game/delete-player-from-waiting-list", json={"rows_count": "5", "player_id": player_1.id})
+
+    response = await test_client.post(
+        "/game/delete-player-from-waiting-list", json={"rows_count": "5", "player_id": player_1.id}
+    )
     assert response.status_code == 200
     assert response.json() == {"deleted": True}
     assert await redis.hget(name="players_waiting_list", key="5") is None
 
-    response = await test_client.post("/game/delete-player-from-waiting-list", json={"rows_count": "5", "player_id": player_1.id})
+    response = await test_client.post(
+        "/game/delete-player-from-waiting-list", json={"rows_count": "5", "player_id": player_1.id}
+    )
     assert response.json() == {"deleted": False}
