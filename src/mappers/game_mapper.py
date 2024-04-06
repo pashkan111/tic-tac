@@ -4,7 +4,7 @@ from typing import Any
 
 
 def map_player(*, player_id: int, chip: Chips | None = None) -> Player:
-    return Player(player_id, chip)
+    return Player(id=player_id, chip=chip)
 
 
 def map_game_data_from_redis(data: dict[str, Any]) -> GameRedisSchema:
@@ -17,4 +17,10 @@ def map_game_data_from_redis(data: dict[str, Any]) -> GameRedisSchema:
             chip=Chips(data["current_move_player"]["chip"]),
         ),
         players=[map_player(player_id=player["id"], chip=player["chip"]) for player in data["players"]],
+        winner=map_player(
+            player_id=data["winner"]["id"],
+            chip=Chips(data["winner"]["chip"]),
+        )
+        if data.get("winner")
+        else None,
     )

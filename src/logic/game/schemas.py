@@ -37,23 +37,24 @@ class Chips(Enum):
         raise ChipDoesNotExistsException(id=id)
 
 
-@dataclass
+@dataclass(slots=True)
 class CheckResult:
     is_winner: bool
     chip: Chips | None = None
 
 
-@dataclass
+@dataclass(slots=True)
 class GameRedisSchema:
     room_id: UUID
     players: list["Player"]
     current_move_player: "Player"
     board: "Board"
     is_active: bool
+    winner: "Player | None"
     created: datetime = datetime.now()
 
 
-@dataclass
+@dataclass(slots=True)
 class GameRedisWriteSchema:
     room_id: UUID
     players: list[PlayerId]

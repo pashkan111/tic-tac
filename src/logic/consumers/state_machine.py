@@ -165,9 +165,11 @@ class SurrenderState(GameBaseState):
         except StateValidationException as e:
             return BaseMachineResponse(data=None, status=MachineActionStatus.FAILED, message=str(e))
 
-        await data.game.surrender(player_id=data.player_id)
+        winner = list(filter(lambda p: p.id != data.player_id, data.game.players))[0]
+        # TODO come up with idea how get a winner without this shit
+        await data.game.finish(winner)
         return BaseMachineResponse(
-            data=SurrenderStateData(winner=next(filter(lambda p: p.id == data.player_id, data.game.players))),
+            data=SurrenderStateData(winner=winner),
             status=MachineActionStatus.SUCCESS,
             message=None,
         )

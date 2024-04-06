@@ -56,6 +56,7 @@ async def test_create_game__enough_args(
             players=[player1_fixture, player2_fixture],
             current_move_player=player1_fixture,
             board=board_fixture.board,
+            winner=None,
         )
     )
 

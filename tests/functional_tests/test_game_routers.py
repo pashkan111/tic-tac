@@ -47,6 +47,7 @@ async def test_create_game_handler__partner_in_waiting_list(pg, test_client, red
         ],
         "created": mocker.ANY,
         "is_active": True,
+        "winner": None,
     }
 
     assert await redis.get_set_values(f'players_by_rooms:{response["room_id"]}') == {

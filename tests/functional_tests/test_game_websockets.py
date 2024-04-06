@@ -363,7 +363,7 @@ async def test_game_ws_handler__surrender(pg, websocket_client, websocket_client
             msg = await websocket2.receive_json()
             assert msg == {
                 "data": {
-                    "data": {"winner": {"chip": 2, "id": player_2.id}},
+                    "data": {"winner": {"chip": 1, "id": player_1.id}},
                 },
                 "status": "SURRENDER",
                 "message": None,
@@ -376,7 +376,7 @@ async def test_game_ws_handler__surrender(pg, websocket_client, websocket_client
                     "player": {"id": 2, "chip": 2},
                     "board": [[1, 0, 0], [0, 0, 0], [0, 0, 0]],
                     "current_move_player": None,
-                    "winner": {"id": 2, "chip": 2},
+                    "winner": {"id": 1, "chip": 1},
                 },
                 "message_status": "SURRENDER",
                 "type": "MESSAGE",
@@ -388,3 +388,6 @@ async def test_game_ws_handler__surrender(pg, websocket_client, websocket_client
                 "message_status": "DISCONNECTED",
                 "type": "MESSAGE",
             }
+
+        game_data = await redis.get(str(room_id))
+        assert orjson.loads(game_data)["winner"]["id"] == player_1.id

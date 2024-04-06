@@ -55,6 +55,7 @@ async def handle_move_state(
     *, websocket: WebSocket, move_result: CheckResult, game: Game, state_machine: GameStateMachine, player: Player
 ) -> IsFinishedState:
     if move_result.is_winner is True:
+        winner = game.get_player_by_chip(move_result.chip)
         await asyncio.gather(
             websocket.send_bytes(
                 ClientResponse(
@@ -64,7 +65,7 @@ async def handle_move_state(
                         MoveCreatedData(
                             board=game.board.board,
                             current_move_player=None,
-                            winner=game._get_player_by_chip(move_result.chip),
+                            winner=winner,
                         )
                     ),
                 ).to_json()
@@ -74,7 +75,7 @@ async def handle_move_state(
                     data=PlayerMove(
                         player=player,
                         board=game.board.board,
-                        winner=game._get_player_by_chip(move_result.chip),
+                        winner=winner,
                         current_move_player=None,
                     ),
                     message_status=MessageStatus.FINISH,
@@ -82,6 +83,7 @@ async def handle_move_state(
                 player_id=player.id,
                 room_id=game.room_id,
             ),
+            game.finish(winner),
         )
 
         state_machine.change_state(GameState.FINISHED_STATE)

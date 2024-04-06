@@ -23,6 +23,7 @@ class Game(GameAbstract):
     checker: CheckerArray
     current_move_player: Player
     is_active: bool
+    winner: Player | None = None
 
     def __init__(
         self,
@@ -42,13 +43,14 @@ class Game(GameAbstract):
         self.is_active = False
 
     def _switch_player(self) -> None:
-        self.current_move_player = list(filter(lambda player: player.id != self.current_move_player.id, self.players))[
-            0
-        ]
+        self.current_move_player = list(
+            filter(
+                lambda player: player.id != self.current_move_player.id,
+                self.players,
+            )
+        )[0]
 
-    def _get_player_by_chip(self, chip: Chips | None) -> Player | None:
-        if chip is None:
-            return None
+    def get_player_by_chip(self, chip: Chips) -> Player:
         return list(filter(lambda player: player.chip == chip, self.players))[0]
 
     def _set_chips_to_players(self) -> None:
@@ -70,6 +72,7 @@ class Game(GameAbstract):
         self.current_move_player = game_data.current_move_player
         self.board.board = game_data.board
         self.is_active = game_data.is_active
+        self.winner = game_data.winner
 
     async def _save_state(self) -> None:
         game_data = GameRedisSchema(
@@ -78,6 +81,7 @@ class Game(GameAbstract):
             current_move_player=self.current_move_player,
             board=self.board.board,
             is_active=self.is_active,
+            winner=self.winner,
         )
         await asyncio.gather(
             self.repo.set_game(game_data),
@@ -116,7 +120,8 @@ class Game(GameAbstract):
         await self._save_state()
         return check_result
 
-    async def surrender(self, player_id: PlayerId):
-        self.is_active = False
+    async def finish(self, winner: Player):
         await self._update_state()
-        # TODO save to postgres database
+        self.is_active = False
+        self.winner = winner
+        await self._save_state()

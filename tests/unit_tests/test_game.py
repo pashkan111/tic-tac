@@ -34,6 +34,7 @@ async def test_make_move__game_not_started(
         players=[player1_fixture, player2_fixture],
         current_move_player=player1_fixture,
         board=board_fixture.board,
+        winner=None,
     )
 
     game = Game(
