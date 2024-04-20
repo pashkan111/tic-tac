@@ -47,11 +47,11 @@ class CheckResult:
 class GameRedisSchema:
     room_id: UUID
     players: list["Player"]
-    current_move_player: "Player"
+    current_move_player: "Player | None"
     board: "Board"
     is_active: bool
     winner: "Player | None"
-    created: datetime = datetime.now()
+    last_updated: datetime = datetime.now()
 
 
 @dataclass(slots=True)

@@ -30,7 +30,7 @@ async def websocket_client2():
 DEFAULT_VARS = EnvVariables(
     db_schema_path="src/repo/schema.sql",
     db_drop_schema_path="src/repo/drop_schema.sql",
-    db_config_path="src.repo.repository_common",
+    db_config_path="src.repo.postgres",
     redis_config_path="src.repo.repository_game",
 )
 

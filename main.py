@@ -16,7 +16,7 @@ from src.presentation.handlers.ws_game_handlers import ws_game_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from src.repo.repository_common import pg
+    from src.repo.repository_user import pg
 
     await pg.create_pool()
     yield

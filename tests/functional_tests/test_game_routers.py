@@ -34,7 +34,7 @@ async def test_create_game_handler__partner_in_waiting_list(pg, test_client, red
     response = response.json()
     assert response["game_started"] is True
     assert response["partner_id"] == 3
-    assert orjson.loads(await redis.get(key=response["room_id"])) == {
+    assert orjson.loads(await redis.get(key=f'game:{response["room_id"]}')) == {
         "room_id": response["room_id"],
         "players": [{"id": 3, "chip": 1}, {"id": player_1.id, "chip": 2}],
         "current_move_player": {"id": 3, "chip": 1},
@@ -45,7 +45,7 @@ async def test_create_game_handler__partner_in_waiting_list(pg, test_client, red
             [0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0],
         ],
-        "created": mocker.ANY,
+        "last_updated": mocker.ANY,
         "is_active": True,
         "winner": None,
     }
@@ -73,7 +73,7 @@ async def test_create_game_handler__thereis_a_game_with_such_player(pg, test_cli
 
     await redis.hset(name="active_players", key=str(player_1.id), value=str(room_id))
     await redis.set(
-        key=str(room_id),
+        key=f"game:{str(room_id)}",
         value=orjson.dumps(
             {
                 "room_id": room_id,
@@ -85,6 +85,7 @@ async def test_create_game_handler__thereis_a_game_with_such_player(pg, test_cli
                     [0, 0, 0],
                 ],
                 "is_active": False,
+                "winner": None,
             }
         ),
     )

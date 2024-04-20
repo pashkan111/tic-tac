@@ -26,6 +26,8 @@ if env == "test":
 
 
 REDIS_CONNECTION_STRING = "redis://localhost:6379"
-REDIS_PLAYERS_WAITING_LIST_NAME = "players_waiting_list"
-REDIS_PLAYERS_BY_ROOMS = "players_by_rooms"
-REDIS_ACTIVE_PLAYERS = "active_players"
+
+REDIS_PLAYERS_WAITING_LIST_NAME_KEY = "players_waiting_list"
+REDIS_GAME_KEY = "game"
+REDIS_PLAYERS_BY_ROOMS_KEY = "players_by_rooms"
+REDIS_ACTIVE_PLAYERS_KEY = "active_players"

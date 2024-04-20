@@ -21,7 +21,7 @@ class Game(GameAbstract):
     repo: RepositoryGame
     board: BoardArray
     checker: CheckerArray
-    current_move_player: Player
+    current_move_player: Player | None
     is_active: bool
     winner: Player | None = None
 
@@ -105,12 +105,13 @@ class Game(GameAbstract):
         self.is_active = True
 
         await asyncio.gather(
-            self.repo.remove_players_from_wait_list(rows_count=self.board.rows_count), self._save_state()
+            self.repo.remove_players_from_wait_list(rows_count=self.board.rows_count),
+            self._save_state(),
         )
 
     async def make_move(self, *, player_id: PlayerId, row: int, col: int) -> CheckResult:
         await self._update_state()
-        if not self.is_active:
+        if not (self.is_active and self.current_move_player):
             raise GameNotActiveException(room_id=self.room_id)
 
         self._check_player_move(player_id)
@@ -124,4 +125,5 @@ class Game(GameAbstract):
         await self._update_state()
         self.is_active = False
         self.winner = winner
+        self.current_move_player = None
         await self._save_state()

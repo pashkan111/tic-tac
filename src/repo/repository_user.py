@@ -1,10 +1,9 @@
-from python_tools.postgres_tools import Pg
-from settings import POSTGRES_CONNECTION_STRING
+from .postgres import pg, Pg
 from src.logic.auth.schemas import UserData
 from src.logic.exceptions import UserNotFoundException
 
 
-class RepositoryCommon:
+class RepositoryUser:
     pg: Pg
 
     def __init__(self, pg):
@@ -15,14 +14,14 @@ class RepositoryCommon:
             INSERT INTO users (username, password)
             VALUES ($1, $2) RETURNING id
         """
-        return await self.pg.get().fetchval(insert_query, username, password)
+        return await self.pg.get().fetchval(query=insert_query, args=[username, password])
 
     async def get_user_by_username(self, username: str) -> UserData | None:
         query = """
             SELECT * FROM users
             WHERE username = $1
         """
-        user = await self.pg.get().fetchrow(query, username)
+        user = await self.pg.get().fetchrow(query=query, args=[username])
         if user:
             return UserData(user_id=user["id"], username=user["username"], password=user["password"])
         return None
@@ -32,11 +31,10 @@ class RepositoryCommon:
             SELECT * FROM users
             WHERE id = $1
         """
-        user = await self.pg.get().fetchrow(query, id)
+        user = await self.pg.get().fetchrow(query=query, args=[id])
         if user:
             return UserData(user_id=user["id"], username=user["username"], password=user["password"])
         raise UserNotFoundException(user_id=id)
 
 
-pg = Pg(POSTGRES_CONNECTION_STRING)
-repo = RepositoryCommon(pg)
+user_repo = RepositoryUser(pg)

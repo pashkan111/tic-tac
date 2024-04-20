@@ -55,3 +55,11 @@ async def get_chips_handler():
 async def delete_player_from_waiting_list_handler(data: PlayerDeleteFromWaitingRequest):
     deleted = await delete_player_from_waiting_list(data.rows_count)
     return PlayerDeleteFromWaitingResponse(deleted=deleted)
+
+
+@game_router.get("/test")
+async def test_handler(rollback: bool):
+    from src.repo.repository_game_pg import game_repo
+
+    await game_repo.upsert(rollback)
+    return 200

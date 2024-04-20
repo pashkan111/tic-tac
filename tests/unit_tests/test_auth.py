@@ -15,13 +15,15 @@ TOKEN_LIFETIME = timedelta(days=1)
 
 
 def test_check_token():
-    token = jwt.encode(payload={"user_id": 11, "created_at": datetime.now().strftime("%d/%m/%Y, %H:%M:%S")}, key=SECRET)
+    token = jwt.encode(
+        payload={"user_id": 11, "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")}, key=SECRET
+    )
     assert check_token(token=token, secret=SECRET, token_lifetime=TOKEN_LIFETIME) == 11
 
 
 def test_check_token__lifetime_exceed():
     token = jwt.encode(
-        payload={"user_id": 11, "created_at": (datetime.now() - timedelta(days=2)).strftime("%d/%m/%Y, %H:%M:%S")},
+        payload={"user_id": 11, "created_at": (datetime.now() - timedelta(days=2)).strftime("%Y-%m-%dT%H:%M:%S.%f")},
         key=SECRET,
     )
     with pytest.raises(TokenExpiredException):

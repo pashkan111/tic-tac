@@ -42,7 +42,7 @@ async def test_game_ws_handler__connected(pg, websocket_client, player_1, redis)
         [0, 0, 0],
     ]
     await redis.set(
-        key=str(room_id),
+        key=f"game:{str(room_id)}",
         value=orjson.dumps(
             {
                 "room_id": str(room_id),
@@ -82,7 +82,7 @@ async def test_game_ws_handler__make_moves__error(pg, websocket_client, player_1
         [0, 0, 0, 0],
     ]
     await redis.set(
-        key=str(room_id),
+        key=f"game:{str(room_id)}",
         value=orjson.dumps(
             {
                 "room_id": str(room_id),
@@ -136,7 +136,7 @@ async def test_game_ws_handler__make_moves(pg, websocket_client, websocket_clien
         [0, 0, 0],
     ]
     await redis.set(
-        key=str(room_id),
+        key=f"game:{str(room_id)}",
         value=orjson.dumps(
             {
                 "room_id": str(room_id),
@@ -323,7 +323,7 @@ async def test_game_ws_handler__surrender(pg, websocket_client, websocket_client
         [0, 0, 0],
     ]
     await redis.set(
-        key=str(room_id),
+        key=f"game:{str(room_id)}",
         value=orjson.dumps(
             {
                 "room_id": str(room_id),
@@ -389,5 +389,5 @@ async def test_game_ws_handler__surrender(pg, websocket_client, websocket_client
                 "type": "MESSAGE",
             }
 
-        game_data = await redis.get(str(room_id))
+        game_data = await redis.get(f"game:{str(room_id)}")
         assert orjson.loads(game_data)["winner"]["id"] == player_1.id
