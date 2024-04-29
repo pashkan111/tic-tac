@@ -39,6 +39,9 @@ class BaseMessage:
     def to_json(self) -> str:
         return orjson.dumps(asdict(self)).decode()
 
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
 
 @dataclass
 class PlayerConnected:

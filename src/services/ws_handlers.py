@@ -1,6 +1,6 @@
 from fastapi.websockets import WebSocket
 import asyncio
-from src.logic.consumers.connection_manager import connection_manager
+from src.services.connection_manager import connection_manager
 from src.presentation.entities.ws_game_entities import ResponseStatus, ClientResponse
 from src.logic.events.responses import (
     MoveCreatedResponseEvent,
@@ -13,7 +13,7 @@ from src.logic.events.messages import (
     PlayerMoveMessage,
     MessageStatus,
 )
-from src.logic.consumers.state_machine import (
+from src.services.state_machine import (
     GameStateMachine,
     GameState,
 )

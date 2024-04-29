@@ -2,7 +2,7 @@ from fastapi.websockets import WebSocket
 from fastapi.routing import APIRouter
 import uuid
 import asyncio
-from src.logic.consumers.connection_manager import connection_manager
+from src.services.connection_manager import connection_manager
 from src.mappers.event_mappers import map_event_from_client
 from src.presentation.entities.ws_game_entities import GameStartResponse, ResponseStatus
 from src.logic.exceptions import BadEventParamsException
@@ -16,7 +16,7 @@ from src.logic.events.messages import (
     PlayerDisconnected,
     PlayerDisconnectedMessage,
 )
-from src.logic.consumers.state_machine import (
+from src.services.state_machine import (
     GameStateMachine,
     MachineActionStatus,
     StartGameStateData,
