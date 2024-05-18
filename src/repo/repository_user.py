@@ -1,6 +1,7 @@
-from .postgres import pg, Pg
 from src.logic.auth.schemas import UserData
 from src.logic.exceptions import UserNotFoundException
+
+from .postgres import Pg, pg
 
 
 class RepositoryUser:

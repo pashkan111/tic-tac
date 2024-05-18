@@ -1,10 +1,11 @@
-from src.logic.game.checker import CheckerArray
-from src.logic.game.schemas import CheckResult, Chips
-from src.logic.game.board import BoardArray
-from src.logic.game.player import Player
-from settings import MAX_ROWS, MIN_ROWS
 import pytest
-from src.logic.exceptions import RowsNumberException, MakeMoveException
+
+from settings import MAX_ROWS, MIN_ROWS
+from src.logic.exceptions import MakeMoveException, RowsNumberException
+from src.logic.game.board import BoardArray
+from src.logic.game.checker import CheckerArray
+from src.logic.game.player import Player
+from src.logic.game.schemas import CheckResult, Chips
 
 
 def test_board_created():

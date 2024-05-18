@@ -1,5 +1,6 @@
-import pydantic as pd
 import uuid
+
+import pydantic as pd
 
 
 class GameStartRequest(pd.BaseModel):

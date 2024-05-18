@@ -1,14 +1,15 @@
 from fastapi import APIRouter
+
+from src.logic.auth.authentication import check_user, login_user, register_user
 from src.presentation.entities.auth_entities import (
-    RegisterUserRequest,
-    RegisterUserResponse,
-    LoginUserRequest,
-    LoginUserResponse,
     CheckTokenRequest,
     CheckTokenResponse,
+    LoginUserRequest,
+    LoginUserResponse,
+    RegisterUserRequest,
+    RegisterUserResponse,
 )
 from src.utils.error_handler import error_handler
-from src.logic.auth.authentication import register_user, login_user, check_user
 
 user_router = APIRouter(prefix="/auth")
 

@@ -1,13 +1,15 @@
-from src.logic.exceptions import (
-    UserInvalidCredsException,
-    UsernameAlreadyExistsException,
-    InvalidTokenException,
-    UserInvalidPasswordException,
-)
-from fastapi.exceptions import HTTPException
-from fastapi import status
 from functools import wraps
 from typing import Callable
+
+from fastapi import status
+from fastapi.exceptions import HTTPException
+
+from src.logic.exceptions import (
+    InvalidTokenException,
+    UserInvalidCredsException,
+    UserInvalidPasswordException,
+    UsernameAlreadyExistsException,
+)
 
 
 def error_handler(func: Callable):

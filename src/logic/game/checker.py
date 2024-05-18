@@ -1,11 +1,14 @@
-from src.logic.interfaces import CheckerAbstract
-from .schemas import Chips, CheckResult
-from .board import BoardArray
 from collections import defaultdict
+
+from src.logic.interfaces import CheckerAbstract
+
+from .board import BoardArray
+from .schemas import CheckResult, Chips
 
 
 class CheckerArray(CheckerAbstract):
     def check_win(self, board: BoardArray) -> CheckResult:
+        # TODO add DRAW
         winner = self._check_diagonal(board) or self._check_gorizontal(board) or self._check_vertical(board)
         if winner:
             return CheckResult(is_winner=True, chip=winner)

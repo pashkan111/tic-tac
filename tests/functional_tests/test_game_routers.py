@@ -1,6 +1,7 @@
-import pytest
-import orjson
 import uuid
+
+import orjson
+import pytest
 
 
 @pytest.mark.asyncio

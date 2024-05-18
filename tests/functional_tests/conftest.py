@@ -1,5 +1,6 @@
-import pytest_asyncio
 import dataclasses
+
+import pytest_asyncio
 
 
 @dataclasses.dataclass

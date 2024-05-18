@@ -1,7 +1,8 @@
-from src.logic.interfaces import BoardAbstract
-from .player import Player
 import settings
 from src.logic.exceptions import MakeMoveException, RowsNumberException
+from src.logic.interfaces import BoardAbstract
+
+from .player import Player
 from .schemas import Board
 
 

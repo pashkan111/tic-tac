@@ -1,18 +1,19 @@
-from src.logic.interfaces import GameAbstract
-from .schemas import Chips, CheckResult
-from .board import BoardArray
-from .player import Player
-from .checker import CheckerArray
-from src.repo.repository_game import RepositoryGame
+import asyncio
+import uuid
+
 from src.logic.exceptions import (
-    PlayersNotEnoughException,
     GameNotActiveException,
     MoveTurnException,
+    PlayersNotEnoughException,
     RoomNotFoundInRepoException,
 )
-import uuid
-from .schemas import GameRedisSchema, PlayerId
-import asyncio
+from src.logic.interfaces import GameAbstract
+from src.repo.repository_game import RepositoryGame
+
+from .board import BoardArray
+from .checker import CheckerArray
+from .player import Player
+from .schemas import CheckResult, Chips, GameRedisSchema, PlayerId
 
 
 class Game(GameAbstract):
@@ -23,7 +24,7 @@ class Game(GameAbstract):
     checker: CheckerArray
     current_move_player: Player | None
     is_active: bool
-    winner: Player | None = None
+    winner: Player
 
     def __init__(
         self,
@@ -41,6 +42,7 @@ class Game(GameAbstract):
         self.room_id = room_id or uuid.uuid4()
         self.current_move_player = current_move_player
         self.is_active = False
+        self.winner = None
 
     def _switch_player(self) -> None:
         self.current_move_player = list(
@@ -52,6 +54,9 @@ class Game(GameAbstract):
 
     def get_player_by_chip(self, chip: Chips) -> Player:
         return list(filter(lambda player: player.chip == chip, self.players))[0]
+
+    def get_player_by_id(self, player_id: PlayerId) -> Player:
+        return list(filter(lambda player: player.id == player_id, self.players))[0]
 
     def _set_chips_to_players(self) -> None:
         chips_iterator = iter(Chips)
@@ -117,6 +122,11 @@ class Game(GameAbstract):
         self._check_player_move(player_id)
         self.board.make_move(player=self.current_move_player, row=row, col=col)
         check_result = self.checker.check_win(self.board)
+        if check_result.is_winner:
+            # TODO придумать как назначать победителя
+            # потому что вся эта логика с check_result - тупость
+
+            self.winner = self.get_player_by_chip(check_result.chip)
         self._switch_player()
         await self._save_state()
         return check_result

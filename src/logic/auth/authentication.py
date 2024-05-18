@@ -1,9 +1,11 @@
-from settings import SECRET, TOKEN_LIFETIME
-from .schemas import Token, UserId, UserLoginData
-from .utils import check_password, get_password_hash, create_token, check_token
-from src.repo.repository_user import user_repo
-from src.logic.exceptions import UserInvalidCredsException, UsernameAlreadyExistsException, UserInvalidPasswordException
 from asyncpg.exceptions import UniqueViolationError
+
+from settings import SECRET, TOKEN_LIFETIME
+from src.logic.exceptions import UserInvalidCredsException, UserInvalidPasswordException, UsernameAlreadyExistsException
+from src.repo.repository_user import user_repo
+
+from .schemas import Token, UserId, UserLoginData
+from .utils import check_password, check_token, create_token, get_password_hash
 
 
 async def register_user(*, username: str, password: str) -> UserId:

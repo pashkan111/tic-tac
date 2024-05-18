@@ -1,6 +1,8 @@
-from .postgres import pg, Pg
-from src.logic.game.schemas import GameRedisSchema
 import orjson
+
+from src.logic.game.schemas import GameRedisSchema
+
+from .postgres import Pg, pg
 
 
 class RepositoryGame:

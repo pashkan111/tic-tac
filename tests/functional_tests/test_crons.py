@@ -1,7 +1,8 @@
-import pytest
-import orjson
 import asyncio
 import datetime
+
+import orjson
+import pytest
 
 
 @pytest.mark.asyncio

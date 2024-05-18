@@ -1,11 +1,12 @@
-from src.mappers.game_mapper import (
-    map_game_data_from_redis,
-    Player,
-    Chips,
-)
-from src.mappers.event_mappers import map_event_from_client
-from src.logic.events.events import StartGameEventData
 import json
+
+from src.logic.entities.events import StartGameEventData
+from src.mappers.event_mappers import map_event_from_client
+from src.mappers.game_mapper import (
+    Chips,
+    Player,
+    map_game_data_from_redis,
+)
 
 
 def test_map_game_data_from_redis():

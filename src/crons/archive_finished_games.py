@@ -1,8 +1,10 @@
+import asyncio
+
+import orjson
+
+from src.mappers.game_mapper import map_game_data_from_redis
 from src.repo.repository_game import redis_client
 from src.repo.repository_game_pg import game_repo
-import orjson
-from src.mappers.game_mapper import map_game_data_from_redis
-import asyncio
 
 
 async def archive_finished_games():

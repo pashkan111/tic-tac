@@ -69,6 +69,10 @@ class BadEventTypeException(AbstractException):
     message = "Event '{event}' does not exist"
 
 
+class ParseMessageException(AbstractException):
+    message = "Error parsing message. Message: {message}"
+
+
 # AUTH EXCEPTIONS
 # ________________________________________________________________
 class InvalidTokenException(AbstractException):

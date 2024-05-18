@@ -1,19 +1,20 @@
-from .game import Game
-from .checker import CheckerArray
-from .board import BoardArray
-from .player import Player
-from src.repo.repository_game import repo
 import uuid
-from src.logic.exceptions import (
-    NotEnoughArgsException,
-    RoomNotFoundInRepoException,
-    PlayersNotEnoughException,
-    PlayersAlreadyInWaitingListException,
-    ServerException,
-)
-from .schemas import GameRedisSchema
 from logging import getLogger
 
+from src.logic.exceptions import (
+    NotEnoughArgsException,
+    PlayersAlreadyInWaitingListException,
+    PlayersNotEnoughException,
+    RoomNotFoundInRepoException,
+    ServerException,
+)
+from src.repo.repository_game import repo
+
+from .board import BoardArray
+from .checker import CheckerArray
+from .game import Game
+from .player import Player
+from .schemas import GameRedisSchema
 
 logger = getLogger(__name__)
 

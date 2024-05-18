@@ -1,89 +1,88 @@
-from fastapi.websockets import WebSocket
 import asyncio
-from src.services.connection_manager import connection_manager
-from src.presentation.entities.ws_game_entities import ResponseStatus, ClientResponse
-from src.logic.events.responses import (
-    MoveCreatedResponseEvent,
-    SurrenderResponseEvent,
-    SurrenderData,
-    MoveCreatedData,
-)
-from src.logic.events.messages import (
+from typing import TypeAlias
+
+from fastapi.websockets import WebSocket
+
+from src.logic.entities.messages import (
+    MessageStatus,
     PlayerMove,
     PlayerMoveMessage,
-    MessageStatus,
+    PlayerSurrenderMessage,
 )
-from src.services.state_machine import (
-    GameStateMachine,
-    GameState,
+from src.logic.entities.messages import (
+    PlayerSurrender as PlayerSurrenderMessageData,
 )
-from typing import TypeAlias
+from src.logic.entities.responses import GameMoveCreated, MoveCreatedResponse, PlayerSurrender, PlayerSurrenderResponse
+from src.logic.enums.response_status import ResponseStatus
 from src.logic.game.game import Game
-from src.logic.game.schemas import CheckResult
 from src.logic.game.player import Player
-
+from src.logic.game.schemas import CheckResult
+from src.services.pubsub import publish_message
+from src.services.state_machine import (
+    GameState,
+    GameStateMachine,
+)
 
 IsFinishedState: TypeAlias = int
 
 
-async def handle_surrender_state(*, websocket: WebSocket, game: Game, player: Player, winner: Player) -> None:
+async def handle_surrender_state(*, websocket: WebSocket, game: Game, channel_name: str, player: Player) -> None:
     await asyncio.gather(
         websocket.send_bytes(
-            ClientResponse(
-                status=ResponseStatus.SURRENDER,
+            PlayerSurrenderResponse(
+                data=PlayerSurrender(winner=game.winner, player=player),
+                response_status=ResponseStatus.SUCCESS,
                 message=None,
-                data=SurrenderResponseEvent(SurrenderData(winner=winner)),
             ).to_json()
         ),
-        connection_manager.send_event_to_all_players(
-            message=PlayerMoveMessage(
-                data=PlayerMove(
-                    player=player,
-                    board=game.board.board,
-                    winner=winner,
-                    current_move_player=None,
-                ),
+        publish_message(
+            channel=channel_name,
+            message=PlayerSurrenderMessage(
+                data=PlayerSurrenderMessageData(winner=game.winner),
                 message_status=MessageStatus.SURRENDER,
+                player_sent=player,
             ),
-            player_id=player.id,
-            room_id=game.room_id,
         ),
     )
 
 
 async def handle_move_state(
-    *, websocket: WebSocket, move_result: CheckResult, game: Game, state_machine: GameStateMachine, player: Player
+    *,
+    websocket: WebSocket,
+    move_result: CheckResult,
+    game: Game,
+    state_machine: GameStateMachine,
+    player: Player,
+    channel_name: str,
 ) -> IsFinishedState:
     if move_result.is_winner is True:
-        winner = game.get_player_by_chip(move_result.chip)
         await asyncio.gather(
             websocket.send_bytes(
-                ClientResponse(
-                    status=ResponseStatus.FINISHED,
+                MoveCreatedResponse(
                     message=None,
-                    data=MoveCreatedResponseEvent(
-                        MoveCreatedData(
-                            board=game.board.board,
-                            current_move_player=None,
-                            winner=winner,
-                        )
+                    response_status=ResponseStatus.SUCCESS,
+                    data=GameMoveCreated(
+                        board=game.board.board,
+                        current_move_player=None,
+                        winner=game.winner,
+                        player=player,
                     ),
                 ).to_json()
             ),
-            connection_manager.send_event_to_all_players(
+            publish_message(
+                channel=channel_name,
                 message=PlayerMoveMessage(
                     data=PlayerMove(
                         player=player,
                         board=game.board.board,
-                        winner=winner,
+                        winner=game.winner,
                         current_move_player=None,
                     ),
                     message_status=MessageStatus.FINISH,
+                    player_sent=player,
                 ),
-                player_id=player.id,
-                room_id=game.room_id,
             ),
-            game.finish(winner),
+            # game.finish(game.winner),
         )
 
         state_machine.change_state(GameState.FINISHED_STATE)
@@ -91,15 +90,16 @@ async def handle_move_state(
 
     await asyncio.gather(
         websocket.send_bytes(
-            ClientResponse(
-                status=ResponseStatus.SUCCESS,
+            MoveCreatedResponse(
+                response_status=ResponseStatus.SUCCESS,
                 message=None,
-                data=MoveCreatedResponseEvent(
-                    MoveCreatedData(board=game.board.board, current_move_player=game.current_move_player, winner=None)
+                data=GameMoveCreated(
+                    board=game.board.board, current_move_player=game.current_move_player, winner=None, player=player
                 ),
             ).to_json()
         ),
-        connection_manager.send_event_to_all_players(
+        publish_message(
+            channel=channel_name,
             message=PlayerMoveMessage(
                 data=PlayerMove(
                     player=player,
@@ -108,9 +108,8 @@ async def handle_move_state(
                     current_move_player=game.current_move_player,
                 ),
                 message_status=MessageStatus.MOVE,
+                player_sent=player,
             ),
-            player_id=player.id,
-            room_id=game.room_id,
         ),
     )
     return False

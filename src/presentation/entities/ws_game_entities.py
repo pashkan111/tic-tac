@@ -1,20 +1,29 @@
-from dataclasses import dataclass, asdict
-import orjson
-from typing import Any
-from src.logic.events.responses import BaseResponseEvent
+from dataclasses import asdict, dataclass
 from enum import StrEnum
-from src.logic.events.messages import MessageType
+from typing import Any
+
+import orjson
+
+from src.logic.enums.event_type import EventType
+
+MessageType = EventType
+# TODO REMOVE
 
 
 class ResponseStatus(StrEnum):
-    """Статусы ответов клиенту на события"""
+    """Статусы ответов клиенту"""
 
+    START = "START"
     CONNECTED = "CONNECTED"
     DISCONNECTED = "DISCONNECTED"
-    SUCCESS = "SUCCESS"
+    MOVE = "MOVE"
     FINISHED = "FINISHED"
     SURRENDER = "SURRENDER"
     ERROR = "ERROR"
+    SUCCESS = "SUCCESS"
+
+
+# TODO статус будет error or success
 
 
 @dataclass(slots=True)
@@ -35,4 +44,4 @@ class GameStartResponse(BaseResponse):
 
 @dataclass(slots=True)
 class ClientResponse(BaseResponse):
-    data: BaseResponseEvent
+    data: Any

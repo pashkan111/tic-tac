@@ -1,7 +1,9 @@
-from src.logic.game.schemas import GameRedisSchema, Chips
-from src.logic.game.player import Player
-from typing import Any
 import datetime
+from typing import Any
+
+from src.logic.game.player import Player
+from src.logic.game.schemas import Chips, GameRedisSchema
+
 from .dt import decode_datetime
 
 

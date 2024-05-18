@@ -4,26 +4,25 @@
 2) Сделан ход
 3) Победа
 """
-from src.logic.events.events import MoveEventData, StartGameEventData, BaseEvent, ClientEventType
-from src.logic.exceptions import (
-    StateValidationException,
-    RoomNotFoundInRepoException,
-    UserNotFoundException,
-    InvalidTokenException,
-    TokenExpiredException,
-)
-from src.logic.auth.authentication import check_user
-from src.logic.game.game import Game
-from src.logic.game.schemas import PlayerId
-from src.logic.game.player import Player
-
-
 from dataclasses import dataclass
-from typing import Any, Callable
 from enum import StrEnum
-from src.logic.game.main import create_game
+from typing import Any, Callable
 from uuid import UUID
+
+from src.logic.auth.authentication import check_user
+from src.logic.entities.events import BaseEvent, ClientEventType, MoveEventData, StartGameEventData
+from src.logic.exceptions import (
+    InvalidTokenException,
+    RoomNotFoundInRepoException,
+    StateValidationException,
+    TokenExpiredException,
+    UserNotFoundException,
+)
 from src.logic.game.checker import CheckResult
+from src.logic.game.game import Game
+from src.logic.game.main import create_game
+from src.logic.game.player import Player
+from src.logic.game.schemas import PlayerId
 
 
 class MachineActionStatus(StrEnum):
@@ -49,7 +48,7 @@ class BaseMachineResponse:
 @dataclass(slots=True)
 class StartGameStateData:
     game: Game
-    player_id: PlayerId
+    player: Player
 
 
 @dataclass(slots=True)
@@ -126,9 +125,10 @@ class StartState(GameBaseState):
         except RoomNotFoundInRepoException as e:
             return BaseMachineResponse(data=None, status=MachineActionStatus.FAILED, message=str(e))
 
-        self.game = game
         return BaseMachineResponse(
-            data=StartGameStateData(game=game, player_id=player_id), status=MachineActionStatus.SUCCESS, message=None
+            data=StartGameStateData(game=game, player=game.get_player_by_id(player_id)),
+            status=MachineActionStatus.SUCCESS,
+            message=None,
         )
 
 

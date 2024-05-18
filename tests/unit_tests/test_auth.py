@@ -1,14 +1,14 @@
-from src.logic.auth.utils import (
-    check_token,
-    check_password,
-    get_password_hash,
-)
-import pytest
-from src.logic.exceptions import TokenExpiredException
+from datetime import datetime, timedelta
 
 import jwt
-from datetime import timedelta, datetime
+import pytest
 
+from src.logic.auth.utils import (
+    check_password,
+    check_token,
+    get_password_hash,
+)
+from src.logic.exceptions import TokenExpiredException
 
 SECRET = "secret"
 TOKEN_LIFETIME = timedelta(days=1)

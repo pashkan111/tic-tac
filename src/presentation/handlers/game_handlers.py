@@ -1,20 +1,21 @@
 from fastapi import APIRouter, exceptions, status
+
+from src.logic.auth.authentication import check_user
+from src.logic.exceptions import (
+    NotEnoughArgsException,
+    PlayersAlreadyInWaitingListException,
+    PlayersNotEnoughException,
+    RoomNotFoundInRepoException,
+)
+from src.logic.game.main import create_game
+from src.logic.game.schemas import Chips
 from src.presentation.entities.game_entities import (
     GameStartRequest,
     GameStartResponse,
     PlayerDeleteFromWaitingRequest,
     PlayerDeleteFromWaitingResponse,
 )
-from src.presentation.entities.get_chips import GetChipsResponse, Chip
-from src.logic.game.main import create_game
-from src.logic.auth.authentication import check_user
-from src.logic.exceptions import (
-    NotEnoughArgsException,
-    RoomNotFoundInRepoException,
-    PlayersNotEnoughException,
-    PlayersAlreadyInWaitingListException,
-)
-from src.logic.game.schemas import Chips
+from src.presentation.entities.get_chips import Chip, GetChipsResponse
 from src.services.delete_player_from_waiting_list import delete_player_from_waiting_list
 
 game_router = APIRouter(prefix="/game")

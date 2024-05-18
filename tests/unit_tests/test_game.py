@@ -1,12 +1,13 @@
-from src.logic.interfaces import Chips
-from src.logic.game.game import Game
-from src.logic.exceptions import PlayersNotEnoughException, GameNotActiveException
-import pytest
 import uuid
-from unittest.mock import patch
-from unittest.mock import AsyncMock
-from src.logic.game.schemas import GameRedisSchema
 from asyncio import Future
+from unittest.mock import AsyncMock, patch
+
+import pytest
+
+from src.logic.exceptions import GameNotActiveException, PlayersNotEnoughException
+from src.logic.game.game import Game
+from src.logic.game.schemas import GameRedisSchema
+from src.logic.interfaces import Chips
 
 
 @pytest.mark.asyncio

@@ -1,6 +1,8 @@
-from python_tools.pytest_tools.conftest import *
+import asyncio
+
 import httpx
 from async_asgi_testclient import TestClient as AsyncTestClient
+from python_tools.pytest_tools.conftest import *
 
 
 @pytest_asyncio.fixture
@@ -42,3 +44,11 @@ def pytest_sessionstart(session):
     os.environ["DB_DROP_SCHEMA"] = DEFAULT_VARS["db_drop_schema_path"]
     os.environ["DB_CONFIG"] = DEFAULT_VARS["db_config_path"]
     os.environ["REDIS_CONFIG"] = DEFAULT_VARS["redis_config_path"]
+
+
+@pytest.fixture(scope="session", autouse=True)
+def event_loop():
+    """Create an instance of the default event loop for each test session."""
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()

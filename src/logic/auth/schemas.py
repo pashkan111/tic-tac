@@ -1,7 +1,6 @@
-from typing import TypeAlias
-from dataclasses import dataclass
 import datetime
-
+from dataclasses import dataclass
+from typing import TypeAlias
 
 UserId: TypeAlias = int
 Token: TypeAlias = str

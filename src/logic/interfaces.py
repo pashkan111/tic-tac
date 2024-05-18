@@ -1,8 +1,9 @@
 import abc
-from typing import Any
 import uuid
+from typing import Any
+
+from .entities.events import MoveEvent
 from .game.schemas import Chips
-from .events.events import MoveEvent
 
 
 class CheckerAbstract(abc.ABC):

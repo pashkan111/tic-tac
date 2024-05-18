@@ -1,29 +1,9 @@
 from dataclasses import dataclass
-from enum import StrEnum
+
 from src.logic.auth.schemas import Token
-from typing import Any
-import orjson
+from src.logic.enums.client_event_types import ClientEventType
 
-
-"""События, которые отсылает клиент по вебсокетам"""
-
-
-class ClientEventType(StrEnum):
-    START = "START"
-    """Событие начала игры. На этом этапе происходит авторизация"""
-    MOVE = "MOVE"
-    """Событие хода"""
-    SURRENDER = "SURRENDER"
-    """Событие сдачи"""
-
-
-@dataclass(slots=True)
-class BaseEvent:
-    data: Any
-    event_type: ClientEventType
-
-    def to_json(self) -> str:
-        return orjson.dumps(self.__dict__).decode()
+from .base_schemas import BaseEvent
 
 
 @dataclass(slots=True)

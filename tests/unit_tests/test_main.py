@@ -1,15 +1,17 @@
-from src.logic.game.main import create_game
-import pytest
-from unittest.mock import call
 import uuid
+from unittest.mock import call
+
+import pytest
+
 from src.logic.exceptions import (
     NotEnoughArgsException,
-    RoomNotFoundInRepoException,
     PlayersAlreadyInWaitingListException,
+    RoomNotFoundInRepoException,
     ServerException,
 )
-from src.logic.game.schemas import GameRedisSchema
 from src.logic.game.game import Game, Player
+from src.logic.game.main import create_game
+from src.logic.game.schemas import GameRedisSchema
 
 
 @pytest.mark.asyncio

@@ -1,17 +1,26 @@
-from src.services.state_machine import (
-    GameStateMachine,
-    StartState,
-    BaseMachineResponse,
-    StartGameStateData,
-    MachineActionStatus,
-    BaseMachineRequest,
-    NewState,
-    GameState,
-)
-from src.logic.events.events import StartGameEvent, StartGameEventData, MoveEvent, MoveEventData, ClientEventType, Token
-import pytest
-from src.logic.game.game import Game
 import uuid
+
+import pytest
+
+from src.logic.entities.events import (
+    ClientEventType,
+    MoveEvent,
+    MoveEventData,
+    StartGameEvent,
+    StartGameEventData,
+    Token,
+)
+from src.logic.game.game import Game
+from src.services.state_machine import (
+    BaseMachineRequest,
+    BaseMachineResponse,
+    GameState,
+    GameStateMachine,
+    MachineActionStatus,
+    NewState,
+    StartGameStateData,
+    StartState,
+)
 
 
 @pytest.mark.asyncio
@@ -50,7 +59,7 @@ async def test_state_machine(mocker, repo_fixture, board_fixture, player1_fixtur
     mocker.patch("src.services.state_machine.create_game", return_value=game)
     state_response = await state_machine.handle_event(BaseMachineRequest(event=start_event, room_id=game.room_id))
     assert state_response == BaseMachineResponse(
-        data=StartGameStateData(game=game, player_id=player1_fixture.id),
+        data=StartGameStateData(game=game, player=player1_fixture),
         message=None,
         status=MachineActionStatus.SUCCESS,
     )

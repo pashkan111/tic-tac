@@ -1,7 +1,8 @@
-from src.logic.interfaces import PlayerAbstract
 from dataclasses import dataclass
-from .schemas import Chips
-from .schemas import PlayerId
+
+from src.logic.interfaces import PlayerAbstract
+
+from .schemas import Chips, PlayerId
 
 
 @dataclass(slots=True)

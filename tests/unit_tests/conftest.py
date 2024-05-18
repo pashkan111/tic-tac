@@ -1,10 +1,12 @@
+from unittest.mock import Mock
+
+import pytest
+
 from src.logic.game.board import BoardArray
 from src.logic.game.checker import CheckerArray
-from src.repo.repository_game import RepositoryGame
 from src.logic.game.player import Player
 from src.logic.interfaces import Chips
-import pytest
-from unittest.mock import Mock
+from src.repo.repository_game import RepositoryGame
 
 
 @pytest.fixture()

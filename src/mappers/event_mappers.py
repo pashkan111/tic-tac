@@ -1,9 +1,9 @@
-from src.logic.events.events import MoveEventData, StartGameEventData, BaseEvent, SurrenderEventData, ClientEventType
 import orjson
+
+from src.logic.entities.events import BaseEvent, ClientEventType, MoveEventData, StartGameEventData, SurrenderEventData
 from src.logic.exceptions import BadEventParamsException, BadEventTypeException
 
-
-EVENTS_MAPPERS = {
+EVENT_MAPPING = {
     ClientEventType.START: StartGameEventData,
     ClientEventType.MOVE: MoveEventData,
     ClientEventType.SURRENDER: SurrenderEventData,
@@ -17,7 +17,7 @@ def map_event_from_client(data: str) -> BaseEvent:
     except KeyError:
         raise BadEventParamsException(current_params=list(data_loaded.keys()), needed_params=["event_type"])
     try:
-        event_mapper = EVENTS_MAPPERS[event_type]
+        event_mapper = EVENT_MAPPING[event_type]
     except KeyError:
         raise BadEventTypeException(event=event_type)
     event_data = data_loaded.get("data", {})
