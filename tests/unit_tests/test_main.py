@@ -102,6 +102,9 @@ async def test_create_game__enough_args__player_exist_in_repo(
     repo_get_game_mocked = mocker.patch("src.logic.game.main.repo.get_game")
     repo_get_game_mocked.configure_mock(return_value=None)
 
+    repo_get_player_active_game_mocked = mocker.patch("src.logic.game.main.repo.get_player_active_game")
+    repo_get_player_active_game_mocked.configure_mock(return_value=None)
+
     repo_check_players_in_wait_list_mocked = mocker.patch("src.logic.game.main.repo.check_players_in_wait_list")
     repo_check_players_in_wait_list_mocked.configure_mock(return_value=player1_fixture)
     with pytest.raises(PlayersAlreadyInWaitingListException):

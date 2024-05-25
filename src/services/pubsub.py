@@ -15,12 +15,10 @@ redis_client = RedisClient(settings.REDIS_CONNECTION_STRING)
 
 
 async def publish_message(*, channel: str, message: BaseMessage):
-    data = convert_dataclass_to_dict(message)
-    print("\nPublish message: {}\n".format(data))
     await redis_client.get().xadd(channel=channel, data=convert_dataclass_to_dict(message))
 
 
-async def read_messages(*, channel: str, queue: asyncio.Queue, player_id: int) -> BaseMessage | None:
+async def read_messages(*, channel: str, queue: asyncio.Queue) -> BaseMessage | None:
     last_id = "0-0"
     conn = redis_client.get()
     while True:
@@ -28,7 +26,6 @@ async def read_messages(*, channel: str, queue: asyncio.Queue, player_id: int) -
         if message_raw:
             last_id = message_raw[0][1][-1][0]
             message_text = message_raw[0][1][-1][1]
-            print("\nRead message by Player {}: {}\n".format(player_id, message_text))
             try:
                 message = map_message(message_text)
                 await queue.put(message)

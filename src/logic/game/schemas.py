@@ -14,16 +14,10 @@ PlayerId: TypeAlias = int
 Board: TypeAlias = list[list[int]]
 
 
-class MoveStatus(StrEnum):
+class GameStatus(StrEnum):
     VICTORY = "VICTORY"
-    END = "END"
-    NEXT_MOVE = "NEXT_MOVE"
-
-
-@dataclass(frozen=True, slots=True)
-class MoveEvent:
-    status: MoveStatus
-    winner: int | None = None
+    DRAW = "DRAW"
+    IN_PROGRESS = "IN_PROGRESS"
 
 
 class Chips(Enum):
@@ -39,9 +33,9 @@ class Chips(Enum):
 
 
 @dataclass(slots=True)
-class CheckResult:
-    is_winner: bool
-    chip: Chips | None = None
+class CheckResultNew:
+    status: GameStatus
+    winner: Chips | None = None
 
 
 @dataclass(slots=True)

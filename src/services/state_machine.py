@@ -18,11 +18,10 @@ from src.logic.exceptions import (
     TokenExpiredException,
     UserNotFoundException,
 )
-from src.logic.game.checker import CheckResult
 from src.logic.game.game import Game
 from src.logic.game.main import create_game
 from src.logic.game.player import Player
-from src.logic.game.schemas import PlayerId
+from src.logic.game.schemas import CheckResultNew, PlayerId
 
 
 class MachineActionStatus(StrEnum):
@@ -53,7 +52,7 @@ class StartGameStateData:
 
 @dataclass(slots=True)
 class MadeMoveStateData:
-    move_result: CheckResult
+    move_result: CheckResultNew
 
 
 @dataclass(slots=True)
@@ -165,11 +164,9 @@ class SurrenderState(GameBaseState):
         except StateValidationException as e:
             return BaseMachineResponse(data=None, status=MachineActionStatus.FAILED, message=str(e))
 
-        winner = list(filter(lambda p: p.id != data.player_id, data.game.players))[0]
-        # TODO come up with idea how get a winner without this shit
-        await data.game.finish(winner)
+        await data.game.surrender(data.player_id)
         return BaseMachineResponse(
-            data=SurrenderStateData(winner=winner),
+            data=SurrenderStateData(winner=data.game.winner),
             status=MachineActionStatus.SUCCESS,
             message=None,
         )

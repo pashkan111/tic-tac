@@ -93,7 +93,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
     try:
         queue = asyncio.Queue()
 
-        asyncio.create_task(read_messages(channel=channel_name, queue=queue, player_id=player_id))
+        asyncio.create_task(read_messages(channel=channel_name, queue=queue))
         asyncio.create_task(receive_ws_messages(websocket=websocket, queue=queue))
 
         while True:
@@ -102,7 +102,6 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                 continue
 
             message_or_event = await queue.get()
-            print(f"\nMessage or Event. Data: {message_or_event}\n. Player: {player_id}\n")
 
             if isinstance(message_or_event, BaseEvent):
                 request_event = message_or_event
@@ -158,7 +157,7 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                 if message.player_sent.id == player_id:
                     continue
 
-                await run_message_handler(message=message, websocket=websocket, player_id=player_id)
+                await run_message_handler(message=message, websocket=websocket)
                 continue
 
     except Exception as e:

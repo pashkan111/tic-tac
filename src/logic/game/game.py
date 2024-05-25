@@ -13,7 +13,7 @@ from src.repo.repository_game import RepositoryGame
 from .board import BoardArray
 from .checker import CheckerArray
 from .player import Player
-from .schemas import CheckResult, Chips, GameRedisSchema, PlayerId
+from .schemas import CheckResultNew, Chips, GameRedisSchema, GameStatus, PlayerId
 
 
 class Game(GameAbstract):
@@ -24,7 +24,7 @@ class Game(GameAbstract):
     checker: CheckerArray
     current_move_player: Player | None
     is_active: bool
-    winner: Player
+    winner: Player | None
 
     def __init__(
         self,
@@ -114,26 +114,32 @@ class Game(GameAbstract):
             self._save_state(),
         )
 
-    async def make_move(self, *, player_id: PlayerId, row: int, col: int) -> CheckResult:
+    async def make_move(self, *, player_id: PlayerId, row: int, col: int) -> CheckResultNew:
         await self._update_state()
         if not (self.is_active and self.current_move_player):
             raise GameNotActiveException(room_id=self.room_id)
 
         self._check_player_move(player_id)
         self.board.make_move(player=self.current_move_player, row=row, col=col)
-        check_result = self.checker.check_win(self.board)
-        if check_result.is_winner:
-            # TODO придумать как назначать победителя
-            # потому что вся эта логика с check_result - тупость
+        check_result = self.checker.check_win_or_draw(self.board)
+        if check_result.status in (GameStatus.VICTORY, GameStatus.DRAW):
+            self.winner = self.get_player_by_chip(check_result.winner) if check_result.winner else None
+            await self._save_state()
+            await self.finish(winner=self.winner)
+            return check_result
 
-            self.winner = self.get_player_by_chip(check_result.chip)
         self._switch_player()
         await self._save_state()
         return check_result
 
-    async def finish(self, winner: Player):
+    async def finish(self, winner: Player | None):
         await self._update_state()
         self.is_active = False
         self.winner = winner
         self.current_move_player = None
         await self._save_state()
+
+    async def surrender(self, player_id: PlayerId):
+        await self._update_state()
+        self.winner = list(filter(lambda p: p.id != player_id, self.players))[0]
+        await self.finish(winner=self.winner)

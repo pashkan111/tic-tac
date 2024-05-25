@@ -25,7 +25,7 @@ from src.logic.enums.notification_type import NotificationType
 logger = logging.getLogger(__name__)
 
 
-async def run_message_handler(*, message: BaseMessage, websocket: WebSocket, player_id: int):
+async def run_message_handler(*, message: BaseMessage, websocket: WebSocket):
     handlers_mapping = {
         MessageStatus.CONNECTED: handle_player_connected_message,
         MessageStatus.DISCONNECTED: handle_player_disconnected_message,
@@ -39,26 +39,22 @@ async def run_message_handler(*, message: BaseMessage, websocket: WebSocket, pla
         logger.error("There is no handler for message. Message status: %s", message.message_status)
         return
 
-    await handler(message=message, websocket=websocket, player_id=player_id)
+    await handler(message=message, websocket=websocket)
 
 
-async def handle_player_connected_message(*, message: PlayerConnectedMessage, websocket: WebSocket, player_id: int):
+async def handle_player_connected_message(*, message: PlayerConnectedMessage, websocket: WebSocket):
     await websocket.send_bytes(
         PlayerConnectedResponseEvent(data=PlayerConnectedData(player=message.data.player)).to_json(),
     )
-    print(f"Send Ws Message to player {player_id}. Message: {message}")
 
 
-async def handle_player_disconnected_message(
-    *, message: PlayerDisconnectedMessage, websocket: WebSocket, player_id: int
-):
+async def handle_player_disconnected_message(*, message: PlayerDisconnectedMessage, websocket: WebSocket):
     await websocket.send_bytes(
         PlayerDisconnectedResponseEvent(data=PlayerDisconnectedData(player=message.data.player)).to_json(),
     )
-    print(f"Send Ws Message to player {player_id}. Message: {message}")
 
 
-async def handle_player_made_move_message(*, message: PlayerMoveMessage, websocket: WebSocket, player_id: int):
+async def handle_player_made_move_message(*, message: PlayerMoveMessage, websocket: WebSocket):
     await websocket.send_bytes(
         MoveCreatedResponseEvent(
             data=MoveCreatedData(
@@ -68,10 +64,9 @@ async def handle_player_made_move_message(*, message: PlayerMoveMessage, websock
             )
         ).to_json(),
     )
-    print(f"Send Ws Message to player {player_id}. Message: {message}")
 
 
-async def handle_player_surrendered_message(*, message: PlayerSurrenderMessage, websocket: WebSocket, player_id: int):
+async def handle_player_surrendered_message(*, message: PlayerSurrenderMessage, websocket: WebSocket):
     await websocket.send_bytes(
         SurrenderResponseEvent(
             data=SurrenderData(
@@ -79,10 +74,9 @@ async def handle_player_surrendered_message(*, message: PlayerSurrenderMessage, 
             )
         ).to_json(),
     )
-    print(f"Send Ws Message to player {player_id}. Message: {message}")
 
 
-async def handle_player_finish_message(*, message: PlayerMoveMessage, websocket: WebSocket, player_id: int):
+async def handle_player_finish_message(*, message: PlayerMoveMessage, websocket: WebSocket):
     await websocket.send_bytes(
         MoveCreatedResponseEvent(
             data=MoveCreatedData(
@@ -93,4 +87,3 @@ async def handle_player_finish_message(*, message: PlayerMoveMessage, websocket:
             notification_type=NotificationType.FINISHED,
         ).to_json(),
     )
-    print(f"Send Ws Message to player {player_id}. Message: {message}")

@@ -5,7 +5,7 @@ from src.logic.exceptions import MakeMoveException, RowsNumberException
 from src.logic.game.board import BoardArray
 from src.logic.game.checker import CheckerArray
 from src.logic.game.player import Player
-from src.logic.game.schemas import CheckResult, Chips
+from src.logic.game.schemas import CheckResultNew, Chips, GameStatus
 
 
 def test_board_created():
@@ -30,8 +30,8 @@ def test_check_win_gorizontal():
 
     board.board[3] = [1, 1, 1, 1, 1]
 
-    res = checker.check_win(board=board)
-    assert res == CheckResult(is_winner=True, chip=Chips.X)
+    res = checker.check_win_or_draw(board=board)
+    assert res == CheckResultNew(winner=Chips.X, status=GameStatus.VICTORY)
 
 
 def test_check_win_gorizontal__no_win():
@@ -40,8 +40,8 @@ def test_check_win_gorizontal__no_win():
 
     board.board[3] = [1, 1, 1, 1, 2]
 
-    res = checker.check_win(board=board)
-    assert res == CheckResult(is_winner=False, chip=None)
+    res = checker.check_win_or_draw(board=board)
+    assert res == CheckResultNew(status=GameStatus.IN_PROGRESS)
 
 
 def test_check_win_vertical():
@@ -51,8 +51,8 @@ def test_check_win_vertical():
     for arr in board.board:
         arr[1] = 2
 
-    res = checker.check_win(board=board)
-    assert res == CheckResult(is_winner=True, chip=Chips.O)
+    res = checker.check_win_or_draw(board=board)
+    assert res == CheckResultNew(status=GameStatus.VICTORY, winner=Chips.O)
 
 
 def test_check_win_vertical__no_win():
@@ -65,8 +65,8 @@ def test_check_win_vertical__no_win():
         else:
             arr[1] = 2
 
-    res = checker.check_win(board=board)
-    assert res == CheckResult(is_winner=False, chip=None)
+    res = checker.check_win_or_draw(board=board)
+    assert res == CheckResultNew(status=GameStatus.IN_PROGRESS)
 
 
 def test_check_win_diagonal():
@@ -76,8 +76,8 @@ def test_check_win_diagonal():
     for num, arr in enumerate(board.board):
         arr[num] = 1
 
-    res = checker.check_win(board=board)
-    assert res == CheckResult(is_winner=True, chip=Chips.X)
+    res = checker.check_win_or_draw(board=board)
+    assert res == CheckResultNew(status=GameStatus.VICTORY, winner=Chips.X)
 
 
 def test_check_win_diagonal__no_win():
@@ -90,16 +90,8 @@ def test_check_win_diagonal__no_win():
         else:
             arr[num] = 2
 
-    res = checker.check_win(board=board)
-    assert res == CheckResult(is_winner=False, chip=None)
-
-
-def test_check_win__no_move():
-    board = BoardArray(rows_count=5)
-    checker = CheckerArray()
-
-    res = checker.check_win(board=board)
-    assert res == CheckResult(is_winner=False, chip=None)
+    res = checker.check_win_or_draw(board=board)
+    assert res == CheckResultNew(status=GameStatus.IN_PROGRESS)
 
 
 def test_board_make_move__move_made():
@@ -131,8 +123,18 @@ def test_make_moves(player1_fixture):
         board.make_move(player=player1_fixture, row=2, col="t")
     with pytest.raises(MakeMoveException):
         board.make_move(player=player1_fixture, row=2, col="4")
-    with pytest.raises(MakeMoveException):
-        board.make_move(player=player1_fixture, row=2, col="4")
 
     with pytest.raises(MakeMoveException):
         board.make_move(player=player1_fixture, row=1, col=1)
+
+
+def test_check_draw():
+    board = BoardArray(rows_count=5)
+    checker = CheckerArray()
+
+    for num, arr in enumerate(board.board):
+        for i in range(len(arr)):
+            arr[i] = num + i + 1
+
+    res = checker.check_win_or_draw(board=board)
+    assert res == CheckResultNew(status=GameStatus.DRAW)

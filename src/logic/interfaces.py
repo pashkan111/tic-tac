@@ -8,7 +8,7 @@ from .game.schemas import Chips
 
 class CheckerAbstract(abc.ABC):
     @abc.abstractmethod
-    def check_win(self) -> bool:
+    def check_win_or_draw(self) -> bool:
         ...
 
     @abc.abstractmethod

@@ -16,7 +16,7 @@ from src.logic.entities.responses import GameMoveCreated, MoveCreatedResponse, P
 from src.logic.enums.response_status import ResponseStatus
 from src.logic.game.game import Game
 from src.logic.game.player import Player
-from src.logic.game.schemas import CheckResult
+from src.logic.game.schemas import CheckResultNew, GameStatus
 from src.services.pubsub import publish_message
 from src.services.state_machine import (
     GameState,
@@ -49,13 +49,13 @@ async def handle_surrender_state(*, websocket: WebSocket, game: Game, channel_na
 async def handle_move_state(
     *,
     websocket: WebSocket,
-    move_result: CheckResult,
+    move_result: CheckResultNew,
     game: Game,
     state_machine: GameStateMachine,
     player: Player,
     channel_name: str,
 ) -> IsFinishedState:
-    if move_result.is_winner is True:
+    if move_result.status == GameStatus.VICTORY:
         await asyncio.gather(
             websocket.send_bytes(
                 MoveCreatedResponse(
@@ -82,7 +82,6 @@ async def handle_move_state(
                     player_sent=player,
                 ),
             ),
-            # game.finish(game.winner),
         )
 
         state_machine.change_state(GameState.FINISHED_STATE)
