@@ -23,8 +23,8 @@ class Game(GameAbstract):
     board: BoardArray
     checker: CheckerArray
     current_move_player: Player | None
-    is_active: bool
     winner: Player | None
+    game_status: GameStatus | None
 
     def __init__(
         self,
@@ -41,7 +41,6 @@ class Game(GameAbstract):
         self.players = players
         self.room_id = room_id or uuid.uuid4()
         self.current_move_player = current_move_player
-        self.is_active = False
         self.winner = None
 
     def _switch_player(self) -> None:
@@ -76,8 +75,9 @@ class Game(GameAbstract):
             raise RoomNotFoundInRepoException(room_id=self.room_id)
         self.current_move_player = game_data.current_move_player
         self.board.board = game_data.board
-        self.is_active = game_data.is_active
+        self.game_status = game_data.game_status
         self.winner = game_data.winner
+        self.game_status = game_data.game_status
 
     async def _save_state(self) -> None:
         game_data = GameRedisSchema(
@@ -85,11 +85,12 @@ class Game(GameAbstract):
             players=self.players,
             current_move_player=self.current_move_player,
             board=self.board.board,
-            is_active=self.is_active,
+            game_status=self.game_status,
             winner=self.winner,
         )
         await asyncio.gather(
             self.repo.set_game(game_data),
+            # TODO выпилить для обычного сохранения состояния
             self.repo.set_game_players(player_id=self.players[0].id, room_id=self.room_id),
             self.repo.set_game_players(player_id=self.players[1].id, room_id=self.room_id),
             self.repo.add_players_to_room(
@@ -107,7 +108,7 @@ class Game(GameAbstract):
         if self.current_move_player is None:
             self.current_move_player = self.players[0]
 
-        self.is_active = True
+        self.game_status = GameStatus.IN_PROGRESS
 
         await asyncio.gather(
             self.repo.remove_players_from_wait_list(rows_count=self.board.rows_count),
@@ -116,13 +117,13 @@ class Game(GameAbstract):
 
     async def make_move(self, *, player_id: PlayerId, row: int, col: int) -> CheckResultNew:
         await self._update_state()
-        if not (self.is_active and self.current_move_player):
+        if not (self.game_status and self.game_status.in_progress and self.current_move_player):
             raise GameNotActiveException(room_id=self.room_id)
 
         self._check_player_move(player_id)
         self.board.make_move(player=self.current_move_player, row=row, col=col)
         check_result = self.checker.check_win_or_draw(self.board)
-        if check_result.status in (GameStatus.VICTORY, GameStatus.DRAW):
+        if check_result.status.is_finished:
             self.winner = self.get_player_by_chip(check_result.winner) if check_result.winner else None
             await self._save_state()
             await self.finish(winner=self.winner)
@@ -134,8 +135,8 @@ class Game(GameAbstract):
 
     async def finish(self, winner: Player | None):
         await self._update_state()
-        self.is_active = False
         self.winner = winner
+        self.game_status = GameStatus.VICTORY if winner else GameStatus.DRAW
         self.current_move_player = None
         await self._save_state()
 

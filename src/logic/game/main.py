@@ -18,19 +18,6 @@ from .schemas import GameRedisSchema
 
 logger = getLogger(__name__)
 
-
-def _make_game(game_data: GameRedisSchema) -> Game:
-    board = BoardArray(board=game_data.board)
-    return Game(
-        repo=repo,
-        board=board,
-        checker=CheckerArray(),
-        players=game_data.players,
-        current_move_player=game_data.current_move_player,
-        room_id=game_data.room_id,
-    )
-
-
 """
 1. Проверка на наличие аргументов либо room_id либо (player_id, rows_count)
 
@@ -112,9 +99,13 @@ async def main(
     return game
 
 
-"""
-1. Add new methods for adding players to rooms
-so it could be possible to find if player has active game
-
-
-"""
+def _make_game(game_data: GameRedisSchema) -> Game:
+    board = BoardArray(board=game_data.board)
+    return Game(
+        repo=repo,
+        board=board,
+        checker=CheckerArray(),
+        players=game_data.players,
+        current_move_player=game_data.current_move_player,
+        room_id=game_data.room_id,
+    )

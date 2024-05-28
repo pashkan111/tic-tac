@@ -55,7 +55,7 @@ async def handle_move_state(
     player: Player,
     channel_name: str,
 ) -> IsFinishedState:
-    if move_result.status == GameStatus.VICTORY:
+    if move_result.status.is_finished:
         await asyncio.gather(
             websocket.send_bytes(
                 MoveCreatedResponse(

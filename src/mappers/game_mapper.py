@@ -2,7 +2,7 @@ import datetime
 from typing import Any
 
 from src.logic.game.player import Player
-from src.logic.game.schemas import Chips, GameRedisSchema
+from src.logic.game.schemas import Chips, GameRedisSchema, GameStatus
 
 from .dt import decode_datetime
 
@@ -15,7 +15,6 @@ def map_game_data_from_redis(data: dict[str, Any]) -> GameRedisSchema:
     return GameRedisSchema(
         room_id=data["room_id"],
         board=data["board"],
-        is_active=data["is_active"],
         current_move_player=map_player(
             player_id=data["current_move_player"]["id"],
             chip=Chips(data["current_move_player"]["chip"]),
@@ -30,4 +29,5 @@ def map_game_data_from_redis(data: dict[str, Any]) -> GameRedisSchema:
         if data.get("winner")
         else None,
         last_updated=decode_datetime(data["last_updated"]) if data.get("last_updated") else datetime.datetime.now(),
+        game_status=GameStatus(data["game_status"]) if data["game_status"] else None,
     )

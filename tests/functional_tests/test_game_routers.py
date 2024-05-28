@@ -47,7 +47,7 @@ async def test_create_game_handler__partner_in_waiting_list(pg, test_client, red
             [0, 0, 0, 0, 0],
         ],
         "last_updated": mocker.ANY,
-        "is_active": True,
+        "game_status": "IN_PROGRESS",
         "winner": None,
     }
 
@@ -85,7 +85,7 @@ async def test_create_game_handler__thereis_a_game_with_such_player(pg, test_cli
                     [0, 0, 0],
                     [0, 0, 0],
                 ],
-                "is_active": False,
+                "game_status": "IN_PROGRESS",
                 "winner": None,
             }
         ),

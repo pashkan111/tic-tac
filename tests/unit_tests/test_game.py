@@ -1,11 +1,11 @@
 import uuid
-from asyncio import Future
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from src.logic.exceptions import GameNotActiveException, PlayersNotEnoughException
-from src.logic.game.game import Game
+from src.logic.game.board import BoardArray
+from src.logic.game.game import CheckResultNew, Chips, Game, GameRedisSchema, GameStatus, PlayerId
 from src.logic.game.schemas import GameRedisSchema
 from src.logic.interfaces import Chips
 
@@ -27,15 +27,15 @@ async def test_game_created(player1_fixture, player2_fixture, board_fixture, rep
 
 @pytest.mark.asyncio
 async def test_make_move__game_not_started(
-    player1_fixture, player2_fixture, board_fixture, repo_fixture, checker_fixture, mocker
+    player1_fixture, player2_fixture, board_fixture, repo_fixture, checker_fixture
 ):
     repo_fixture.get_game.return_value = GameRedisSchema(
         room_id=uuid.uuid4(),
-        is_active=False,
         players=[player1_fixture, player2_fixture],
         current_move_player=player1_fixture,
         board=board_fixture.board,
         winner=None,
+        game_status=None,
     )
 
     game = Game(
@@ -177,3 +177,35 @@ async def test_game__set_state__check_call_count(
     await game.make_move(row=3, col=3, player_id=player1_fixture.id)
 
     assert save_state_mocked.call_count == 6
+
+
+@pytest.mark.asyncio
+async def test_game__draw(player1_fixture, player2_fixture, repo_fixture, checker_fixture, mocker):
+    repo_fixture.get_game.return_value = AsyncMock()
+    game = Game(
+        repo=repo_fixture,
+        board=BoardArray(rows_count=3),
+        players=[player1_fixture, player2_fixture],
+        checker=checker_fixture,
+    )
+
+    mocker.patch("src.logic.game.game.Game._save_state")
+    mocker.patch("src.logic.game.game.Game._update_state")
+
+    await game.start()
+
+    await game.make_move(row=1, col=1, player_id=player1_fixture.id)
+    await game.make_move(row=2, col=2, player_id=player2_fixture.id)
+    await game.make_move(row=1, col=2, player_id=player1_fixture.id)
+    await game.make_move(row=1, col=3, player_id=player2_fixture.id)
+    await game.make_move(row=2, col=1, player_id=player1_fixture.id)
+    await game.make_move(row=3, col=1, player_id=player2_fixture.id)
+    await game.make_move(row=3, col=3, player_id=player1_fixture.id)
+
+    assert await game.make_move(row=2, col=3, player_id=player2_fixture.id) == CheckResultNew(
+        status=GameStatus.IN_PROGRESS
+    )
+    assert await game.make_move(row=3, col=2, player_id=player1_fixture.id) == CheckResultNew(status=GameStatus.DRAW)
+    assert game.game_status == GameStatus.DRAW
+    assert game.winner is None
+    assert game.current_move_player is None

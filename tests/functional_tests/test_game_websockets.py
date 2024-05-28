@@ -52,7 +52,7 @@ async def test_game_ws_handler__make_moves__error(pg, websocket_client, player_1
                 "players": [{"id": player_1.id, "chip": 1}, {"id": player_2.id, "chip": 2}],
                 "current_move_player": {"id": player_1.id, "chip": 1},
                 "board": board,
-                "is_active": True,
+                "game_status": "IN_PROGRESS",
             }
         ),
     )
@@ -102,7 +102,7 @@ async def test_game_ws_handler__make_moves(pg, websocket_client, websocket_clien
                 "players": [{"id": player_1.id, "chip": 1}, {"id": player_2.id, "chip": 2}],
                 "current_move_player": {"id": player_1.id, "chip": 1},
                 "board": board,
-                "is_active": True,
+                "game_status": "IN_PROGRESS",
             }
         ),
     )
@@ -264,7 +264,7 @@ async def test_game_ws_handler__surrender(pg, websocket_client, websocket_client
                 "players": [{"id": player_1.id, "chip": 1}, {"id": player_2.id, "chip": 2}],
                 "current_move_player": {"id": player_1.id, "chip": 1},
                 "board": board,
-                "is_active": True,
+                "game_status": "IN_PROGRESS",
             }
         ),
     )

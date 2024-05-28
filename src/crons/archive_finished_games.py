@@ -21,7 +21,7 @@ async def archive_finished_games():
     for key in keys:
         game_data_raw = await redis.get(key)
         game_data = map_game_data_from_redis(orjson.loads(game_data_raw))
-        if game_data.is_active is False:
+        if game_data.game_status.is_finished:
             await redis.delete(key)
 
         if count == 5:

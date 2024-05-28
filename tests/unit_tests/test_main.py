@@ -11,7 +11,7 @@ from src.logic.exceptions import (
 )
 from src.logic.game.game import Game, Player
 from src.logic.game.main import create_game
-from src.logic.game.schemas import GameRedisSchema
+from src.logic.game.schemas import GameRedisSchema, GameStatus
 
 
 @pytest.mark.asyncio
@@ -54,11 +54,11 @@ async def test_create_game__enough_args(
     repo_get_game_mocked.configure_mock(
         return_value=GameRedisSchema(
             room_id=room_id,
-            is_active=True,
             players=[player1_fixture, player2_fixture],
             current_move_player=player1_fixture,
             board=board_fixture.board,
             winner=None,
+            game_status=GameStatus.IN_PROGRESS,
         )
     )
 

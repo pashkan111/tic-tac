@@ -22,7 +22,7 @@ async def test_archive_finished_games_cron(pg, redis, player_1, player_2):
                     [1, 0, 0],
                     [0, 1, 0],
                 ],
-                "is_active": False,
+                "game_status": "DRAW",
                 "winner": {"id": player_2.id, "chip": 2},
                 "last_updated": encode_datetime(datetime.datetime(2022, 12, 12, 6, 10, 22)),
             }
@@ -41,7 +41,25 @@ async def test_archive_finished_games_cron(pg, redis, player_1, player_2):
                     [1, 0, 0],
                     [1, 1, 0],
                 ],
-                "is_active": False,
+                "game_status": "VICTORY",
+                "winner": {"id": player_1.id, "chip": 1},
+                "last_updated": encode_datetime(datetime.datetime(2022, 12, 12, 6, 10, 22)),
+            }
+        ),
+    )
+    await redis.set(
+        key="game:3",
+        value=orjson.dumps(
+            {
+                "room_id": "3",
+                "players": [{"id": player_1.id, "chip": 1}, {"id": player_2.id, "chip": 2}],
+                "current_move_player": None,
+                "board": [
+                    [1, 0, 2],
+                    [0, 0, 2],
+                    [1, 1, 0],
+                ],
+                "game_status": "IN_PROGRESS",
                 "winner": {"id": player_1.id, "chip": 1},
                 "last_updated": encode_datetime(datetime.datetime(2022, 12, 12, 6, 10, 22)),
             }
@@ -67,4 +85,4 @@ async def test_archive_finished_games_cron(pg, redis, player_1, player_2):
         "board": "[[0,0,1],[1,0,0],[0,1,0]]",
     } in pg_data
 
-    assert await redis.keys("game:*") == []
+    assert await redis.keys("game:*") == ["game:3"]

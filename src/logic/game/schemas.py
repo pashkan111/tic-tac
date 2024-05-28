@@ -19,6 +19,14 @@ class GameStatus(StrEnum):
     DRAW = "DRAW"
     IN_PROGRESS = "IN_PROGRESS"
 
+    @property
+    def is_finished(self):
+        return self in [GameStatus.VICTORY, GameStatus.DRAW]
+
+    @property
+    def in_progress(self):
+        return self == GameStatus.IN_PROGRESS
+
 
 class Chips(Enum):
     X = 1
@@ -44,7 +52,7 @@ class GameRedisSchema:
     players: list["Player"]
     current_move_player: "Player | None"
     board: "Board"
-    is_active: bool
+    game_status: GameStatus | None
     winner: "Player | None"
     last_updated: datetime = datetime.now()
 
