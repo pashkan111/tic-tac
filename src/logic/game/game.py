@@ -88,16 +88,7 @@ class Game(GameAbstract):
             game_status=self.game_status,
             winner=self.winner,
         )
-        await asyncio.gather(
-            self.repo.set_game(game_data),
-            # TODO выпилить для обычного сохранения состояния
-            self.repo.set_game_players(player_id=self.players[0].id, room_id=self.room_id),
-            self.repo.set_game_players(player_id=self.players[1].id, room_id=self.room_id),
-            self.repo.add_players_to_room(
-                player_ids=[self.players[0].id, self.players[1].id],
-                room_id=self.room_id,
-            ),
-        )
+        await self.repo.set_game(game_data)
 
     async def start(self):
         if not self._check_players_count():
@@ -112,6 +103,12 @@ class Game(GameAbstract):
 
         await asyncio.gather(
             self.repo.remove_players_from_wait_list(rows_count=self.board.rows_count),
+            self.repo.set_game_players(player_id=self.players[0].id, room_id=self.room_id),
+            self.repo.set_game_players(player_id=self.players[1].id, room_id=self.room_id),
+            self.repo.add_players_to_room(
+                player_ids=[self.players[0].id, self.players[1].id],
+                room_id=self.room_id,
+            ),
             self._save_state(),
         )
 

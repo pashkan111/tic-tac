@@ -173,7 +173,6 @@ async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
                 message=PlayerDisconnectedMessage(data=PlayerDisconnected(player=player), player_sent=player),
             ),
         )
-        # TODO remove old channel
 
 
 async def _process_event(*, event_raw: str, websocket: WebSocket) -> BaseEvent | None:
