@@ -1,19 +1,6 @@
-I want this game works in
-    console on local comp
-    on remote comp
+# Backend for game Tic-Tac-Toe
+Created using FastAPI, websockets, redis, redis-streams
 
-
-Logic must be in the one place and generic for all platforms
-
-User has opportunities to:
-    specify the number of rows
-    specify the length of win row
-
-
-Interface:
-    / method to start a game
-    / method to get a board
-    / method to make a move
 
 
 Architecture:
@@ -24,10 +11,6 @@ Architecture:
 
         Present - There are 2 types of presentations: API and
             console. Both of them must invoke functions of Logic layer
-
-
-Create client in Golang
-
 
 
 Простая реализация:
