@@ -60,9 +60,10 @@ class BadEventParamsException(AbstractException):
     def __init__(self, current_params: list[str], needed_params: list[str]):
         current_params_text = ", ".join([f'"{param}"' for param in current_params])
         needed_params_text = ", ".join([f'"{param}"' for param in needed_params])
-        self.message = self.message.format(current_params=current_params_text, needed_params=needed_params_text).strip(
-            "; "
-        )
+        self.message = self.message.format(
+            current_params=current_params_text,
+            needed_params=needed_params_text,
+        ).strip("; ")
 
 
 class BadEventTypeException(AbstractException):

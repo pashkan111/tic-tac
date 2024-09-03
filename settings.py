@@ -25,7 +25,10 @@ if env == "test":
     )
 
 
-REDIS_CONNECTION_STRING = "redis://localhost:6379"
+REDIS_CONNECTION_STRING = f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}"
+if env == "test":
+    REDIS_CONNECTION_STRING = f"redis://{os.getenv('TEST_REDIS_HOST')}:{os.getenv('TEST_REDIS_PORT')}"
+
 
 REDIS_PLAYERS_WAITING_LIST_NAME_KEY = "players_waiting_list"
 REDIS_GAME_KEY = "game"

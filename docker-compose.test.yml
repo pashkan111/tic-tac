@@ -16,11 +16,7 @@ services:
     image: redis:latest
     restart: always
     ports:
-      - "6379:6379"
-    environment:
-      - REDIS_PASSWORD=${TEST_REDIS_PASSWORD}
-      - REDIS_PORT=${TEST_REDIS_PORT}
-
+      - "${TEST_REDIS_PORT}:6379"
 
 volumes:
   tic_tac:

@@ -41,10 +41,6 @@ class BoardAbstract(abc.ABC):
         pass
 
 
-class RepositoryGameAbstract(abc.ABC):
-    ...
-
-
 class GameAbstract(abc.ABC):
     @abc.abstractmethod
     async def start(self):
