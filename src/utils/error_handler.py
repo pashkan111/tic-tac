@@ -10,9 +10,7 @@ from src.logic.exceptions import (
     UserInvalidPasswordException,
     UsernameAlreadyExistsException,
 )
-from logging import getLogger
 
-logger = getLogger(__name__)
 
 def error_handler(func: Callable):
     @wraps(func)

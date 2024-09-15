@@ -2,11 +2,11 @@ import orjson
 
 from src.logic.game.schemas import GameRedisSchema
 
-from .postgres import pg, PostgresConnection
+from .postgres import Pg, pg
 
 
 class RepositoryGame:
-    pg: PostgresConnection
+    pg: Pg
 
     def __init__(self, pg):
         self.pg = pg
@@ -21,7 +21,7 @@ class RepositoryGame:
                 board
             ) values ($1, $2, $3, $4, $5)
         """
-        await self.pg.execute(
+        await self.pg.get().execute(
             command=query,
             args=[
                 game_schema.players[0].id,

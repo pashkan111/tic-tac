@@ -1,3 +1,5 @@
-from python_tools.postgres_tools import PostgresConnection
+from python_tools.postgres_tools import Pg
 
-pg = PostgresConnection(None)
+from settings import POSTGRES_CONNECTION_STRING
+
+pg = Pg(POSTGRES_CONNECTION_STRING)
