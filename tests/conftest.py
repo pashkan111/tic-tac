@@ -3,12 +3,7 @@ import asyncio
 import httpx
 from async_asgi_testclient import TestClient as AsyncTestClient
 from python_tools.redis_tools import RedisConnection
-from python_tools.pytest_tools.conftest import (
-    AsyncGenerator,
-    EnvVariables,
-    pg,
-    pool
-)
+from python_tools.pytest_tools.conftest import AsyncGenerator, EnvVariables, pg, pool
 import pytest_asyncio
 import os
 import importlib
@@ -64,7 +59,7 @@ def event_loop():
     loop.close()
 
 
-@pytest_asyncio.fixture(scope='function')
+@pytest_asyncio.fixture(scope="function")
 async def redis() -> AsyncGenerator[RedisConnection, None]:
     redis_config = importlib.import_module(os.environ["REDIS_CONFIG"])
     redis_conn = redis_config.conn

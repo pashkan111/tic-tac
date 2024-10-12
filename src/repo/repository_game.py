@@ -2,7 +2,7 @@ from dataclasses import asdict
 from uuid import UUID
 
 from orjson import dumps, loads
-from python_tools.redis_tools.redis_client import RedisClient, RedisConnection
+from python_tools.redis_tools.redis_client import RedisConnection
 import redis.asyncio as redis
 import settings
 from src.logic.game.player import Player

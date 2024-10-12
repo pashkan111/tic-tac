@@ -2,7 +2,6 @@ import asyncio
 import uuid
 from logging import getLogger
 
-from python_tools.redis_tools.redis_client import RedisClient
 
 import settings
 from src.logic.entities.messages import BaseMessage

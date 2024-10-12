@@ -13,9 +13,9 @@ from src.logic.entities.messages import (
     PlayerDisconnected,
     PlayerDisconnectedMessage,
 )
-from src.logic.entities.responses import ErrorResponse, GameStart, GameStartResponse, MoveCreatedResponse
+from src.logic.entities.responses import ErrorResponse, GameStart, GameStartResponse
 from src.logic.enums.response_status import ResponseStatus
-from src.logic.exceptions import BadEventParamsException
+from src.logic.exceptions import BadEventParamsException, BadEventTypeException
 from src.mappers.event_mappers import map_event_from_client
 from src.services.connection_manager import connect, disconnect
 from src.services.messages_handlers import run_message_handler
@@ -181,7 +181,7 @@ async def _process_event(*, event_raw: str, websocket: WebSocket) -> BaseEvent |
     try:
         request_event = map_event_from_client(event_raw)
         return request_event
-    except BadEventParamsException as e:
+    except (BadEventTypeException, BadEventParamsException) as e:
         logger.error(e.message)
         await websocket.send_bytes(
             ErrorResponse(
