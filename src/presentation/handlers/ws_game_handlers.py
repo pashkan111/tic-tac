@@ -38,9 +38,11 @@ ws_game_router = APIRouter(prefix="/game_ws")
 async def game_ws_handler(websocket: WebSocket, room_id: uuid.UUID):
     await websocket.accept()
     data = await websocket.receive_text()
-    request_event = await _process_event(event_raw=data, websocket=websocket)
-    if not request_event:
-        return
+    while True:
+        request_event = await _process_event(event_raw=data, websocket=websocket)
+        break
+        if not request_event:
+            continue
 
     channel_name = get_channel_name(room_id)
 

@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MAX_ROWS = 30
+MAX_ROWS = 10
 MIN_ROWS = 3
 
 SECRET = "UHUIOB665BBB6537b37igs67t"
