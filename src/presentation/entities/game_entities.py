@@ -25,7 +25,6 @@ class PlayerDeleteFromWaitingResponse(pd.BaseModel):
 
 
 class GetUserExistingGameRequest(pd.BaseModel):
-    rows_count: int
     token: str
 
 
