@@ -6,6 +6,7 @@ from src.logic.exceptions import (
     PlayersAlreadyInWaitingListException,
     PlayersNotEnoughException,
     RoomNotFoundInRepoException,
+    RowsNumberException,
 )
 from src.logic.game.main import create_game
 from src.logic.game.schemas import Chips
@@ -14,8 +15,11 @@ from src.presentation.entities.game_entities import (
     GameStartResponse,
     PlayerDeleteFromWaitingRequest,
     PlayerDeleteFromWaitingResponse,
+    GetUserExistingGameRequest,
+    GetUserExistingGameResponse,
 )
 from src.presentation.entities.get_chips import Chip, GetChipsResponse
+from src.repo.repository_game import repo
 from src.services.delete_player_from_waiting_list import delete_player_from_waiting_list
 
 game_router = APIRouter(prefix="/game")
@@ -30,6 +34,8 @@ async def create_game_handler(data: GameStartRequest):
 
     try:
         game = await create_game(player_id=user_id, rows_count=data.rows_count)
+    except RowsNumberException as exc:
+        raise exceptions.HTTPException(status_code=400, detail=exc.message)
     except (RoomNotFoundInRepoException, NotEnoughArgsException) as exc:
         raise exceptions.HTTPException(status_code=400, detail=exc.message)
     except (PlayersNotEnoughException, PlayersAlreadyInWaitingListException):
@@ -51,8 +57,21 @@ async def get_chips_handler():
 
 
 @game_router.post(
-    "/delete-player-from-waiting-list", status_code=status.HTTP_200_OK, response_model=PlayerDeleteFromWaitingResponse
+    "/delete-player-from-waiting-list",
+    status_code=status.HTTP_200_OK,
+    response_model=PlayerDeleteFromWaitingResponse,
 )
 async def delete_player_from_waiting_list_handler(data: PlayerDeleteFromWaitingRequest):
     deleted = await delete_player_from_waiting_list(data.rows_count)
     return PlayerDeleteFromWaitingResponse(deleted=deleted)
+
+
+@game_router.get("/get-existing-game", response_model=GetUserExistingGameResponse)
+async def get_existing_game_handler(data: GetUserExistingGameRequest):
+    try:
+        user_id = await check_user(data.token)
+    except Exception as e:
+        raise exceptions.HTTPException(status_code=401, detail=str(e))
+
+    existing_game_id = await repo.get_player_active_game(user_id)
+    return GetUserExistingGameResponse(game_id=existing_game_id)

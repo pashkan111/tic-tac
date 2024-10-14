@@ -22,3 +22,12 @@ class PlayerDeleteFromWaitingRequest(pd.BaseModel):
 
 class PlayerDeleteFromWaitingResponse(pd.BaseModel):
     deleted: bool
+
+
+class GetUserExistingGameRequest(pd.BaseModel):
+    rows_count: int
+    token: str
+
+
+class GetUserExistingGameResponse(pd.BaseModel):
+    game_id: uuid.UUID | None

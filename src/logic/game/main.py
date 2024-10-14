@@ -1,12 +1,13 @@
 import uuid
 from logging import getLogger
-
+from settings import MAX_ROWS, MIN_ROWS
 from src.logic.exceptions import (
     NotEnoughArgsException,
     PlayersAlreadyInWaitingListException,
     PlayersNotEnoughException,
     RoomNotFoundInRepoException,
     ServerException,
+    RowsNumberException,
 )
 from src.repo.repository_game import repo
 
@@ -41,8 +42,14 @@ logger = getLogger(__name__)
 
 
 async def create_game(
-    *, player_id: int | None = None, rows_count: int | None = None, room_id: uuid.UUID | None = None
+    *,
+    player_id: int | None = None,
+    rows_count: int | None = None,
+    room_id: uuid.UUID | None = None,
 ) -> Game:
+    if rows_count and (rows_count < MIN_ROWS or rows_count > MAX_ROWS):
+        raise RowsNumberException(max_rows=MAX_ROWS, min_rows=MIN_ROWS)
+
     if player_id and rows_count:
         # Check if player has active games
         existing_game_id = await repo.get_player_active_game(player_id)
@@ -89,13 +96,6 @@ async def create_game(
 
     game = _make_game(game_data)
     await game.start()
-    return game
-
-
-async def main(
-    *, player_id: int | None = None, rows_count: int | None = None, room_id: uuid.UUID | None = None
-) -> Game | None:
-    game = await create_game(player_id=player_id, rows_count=rows_count, room_id=room_id)
     return game
 
 
