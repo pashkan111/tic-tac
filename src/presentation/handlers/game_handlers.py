@@ -66,7 +66,7 @@ async def delete_player_from_waiting_list_handler(data: PlayerDeleteFromWaitingR
     return PlayerDeleteFromWaitingResponse(deleted=deleted)
 
 
-@game_router.get("/get-existing-game", response_model=GetUserExistingGameResponse)
+@game_router.post("/get-existing-game", response_model=GetUserExistingGameResponse)
 async def get_existing_game_handler(data: GetUserExistingGameRequest):
     try:
         user_id = await check_user(data.token)
