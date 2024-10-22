@@ -131,15 +131,15 @@ class Game(GameAbstract):
         return check_result
 
     async def finish(self, winner: Player | None):
+        print("finish")
         await self._update_state()
         self.winner = winner
         self.game_status = GameStatus.VICTORY if winner else GameStatus.DRAW
         self.current_move_player = None
         await self._save_state()
-        
+
         for player in self.players:
             await self.repo.remove_player_active_game(player_id=player.id)
-
 
     async def surrender(self, player_id: PlayerId):
         await self._update_state()

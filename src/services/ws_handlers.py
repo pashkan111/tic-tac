@@ -28,21 +28,23 @@ IsFinishedState: TypeAlias = int
 
 async def handle_surrender_state(*, websocket: WebSocket, game: Game, channel_name: str, player: Player) -> None:
     await asyncio.gather(
-        websocket.send_bytes(
-            PlayerSurrenderResponse(
-                data=PlayerSurrender(winner=game.winner, player=player),
-                response_status=ResponseStatus.SUCCESS,
-                message=None,
-            ).to_json()
-        ),
-        publish_message(
-            channel=channel_name,
-            message=PlayerSurrenderMessage(
-                data=PlayerSurrenderMessageData(winner=game.winner),
-                message_status=MessageStatus.SURRENDER,
-                player_sent=player,
+        *[
+            websocket.send_bytes(
+                PlayerSurrenderResponse(
+                    data=PlayerSurrender(winner=game.winner, player=player),
+                    response_status=ResponseStatus.SUCCESS,
+                    message=None,
+                ).to_json()
             ),
-        ),
+            publish_message(
+                channel=channel_name,
+                message=PlayerSurrenderMessage(
+                    data=PlayerSurrenderMessageData(winner=game.winner),
+                    message_status=MessageStatus.SURRENDER,
+                    player_sent=player,
+                ),
+            ),
+        ],
     )
 
 
