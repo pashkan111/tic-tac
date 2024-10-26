@@ -93,7 +93,7 @@ class RepositoryGame:
 
 pool = redis.ConnectionPool.from_url(
     settings.REDIS_CONNECTION_STRING,
-    max_connections=10,
+    max_connections=100,
     encoding="utf-8",
     decode_responses=True,
 )

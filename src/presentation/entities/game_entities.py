@@ -12,7 +12,7 @@ class GameStartResponse(pd.BaseModel):
     game_started: bool
     added_to_queue: bool
     partner_id: int | None
-    room_id: uuid.UUID | None
+    game_id: uuid.UUID | None
 
 
 class PlayerDeleteFromWaitingRequest(pd.BaseModel):
