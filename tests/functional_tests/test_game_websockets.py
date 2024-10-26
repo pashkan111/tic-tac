@@ -121,7 +121,6 @@ async def test_game_ws_handler__make_moves(pg, websocket_client, websocket_clien
             # Подключение игрока 2
             await websocket2.send_text(orjson.dumps({"event_type": "START", "data": {"token": player_2.token}}))
             await websocket2.receive_json()
-
             # Уведомление игрока 1 о подключении игрока 2
             message_for_player1_about_connection_player2 = await websocket1.receive_json()
             assert message_for_player1_about_connection_player2 == {
@@ -129,12 +128,11 @@ async def test_game_ws_handler__make_moves(pg, websocket_client, websocket_clien
                 "notification_type": "CONNECTED",
                 "type": "NOTIFICATION",
             }
-            # Уведомление игрока 2 о подключении игрока 1
-            await websocket2.receive_json()
-
+            
             # Игрок 1 делает ход
             await websocket1.send_text(orjson.dumps({"event_type": "MOVE", "data": {"row": 1, "col": 1}}))
             move_response = await websocket1.receive_json()
+
             assert move_response == {
                 "response_status": "SUCCESS",
                 "message": None,
@@ -286,9 +284,6 @@ async def test_game_ws_handler__surrender(pg, websocket_client, websocket_client
 
             # Уведомление игрока 1 о подключении игрока 2
             await websocket1.receive_json()
-
-            # Уведомление игрока 2 о подключении игрока 1
-            await websocket2.receive_json()
 
             # Игрок 1 делает ход
             await websocket1.send_text(orjson.dumps({"event_type": "MOVE", "data": {"row": 1, "col": 1}}))
