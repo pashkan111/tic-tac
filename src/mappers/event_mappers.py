@@ -26,5 +26,5 @@ def map_event_from_client(data: str) -> BaseEvent:
         return BaseEvent(event_type=event_type, data=event)
     except Exception:
         raise BadEventParamsException(
-            current_params=list(data_loaded.keys()), needed_params=list(event_type.__dataclass_fields__.keys())
+            current_params=list(data_loaded.keys()), needed_params=list(event_mapper.__dataclass_fields__.keys())
         )

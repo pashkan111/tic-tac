@@ -85,10 +85,13 @@ class RepositoryGame:
         return room_id
 
     async def remove_player_active_game(self, player_id: int):
-        print(await self.conn.hdel(
-            name=settings.REDIS_ACTIVE_PLAYERS_KEY,
-            keys=[str(player_id)],
-        ), f"DELETED PLAYER {player_id}")
+        print(
+            await self.conn.hdel(
+                name=settings.REDIS_ACTIVE_PLAYERS_KEY,
+                keys=[str(player_id)],
+            ),
+            f"DELETED PLAYER {player_id}",
+        )
 
 
 pool = redis.ConnectionPool.from_url(

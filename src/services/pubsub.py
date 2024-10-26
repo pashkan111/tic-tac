@@ -18,7 +18,7 @@ async def publish_message(*, channel: str, message: BaseMessage):
 
 
 async def read_messages(*, channel: str, queue: asyncio.Queue) -> BaseMessage | None:
-    last_id = "0-0"
+    last_id = "$"
     while True:
         message_raw = await redis_client.xread(streams={channel: last_id}, count=1)
         if message_raw:
